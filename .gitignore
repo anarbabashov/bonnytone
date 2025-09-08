@@ -1,4 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Main
+.env
+.env.local
 
 # dependencies
 /node_modules
@@ -18,6 +21,7 @@
 # misc
 .DS_Store
 *.pem
+*eml
 
 # debug
 npm-debug.log*
