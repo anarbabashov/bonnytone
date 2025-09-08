@@ -1,0 +1,13 @@
+// Set environment variables for testing
+process.env.NODE_ENV = 'test'
+process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test_db'
+process.env.JWT_PRIVATE_KEY = 'LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0t'
+process.env.JWT_PUBLIC_KEY = 'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0='
+process.env.JWT_ALGORITHM = 'HS512'
+process.env.JWT_ISSUER = 'test-issuer'
+process.env.JWT_AUDIENCE = 'test-audience'
+process.env.TOKEN_HMAC_SECRET = 'test-secret-key-32-bytes-long-exactly'
+process.env.REDIS_URL = 'redis://localhost:6379'
+process.env.EMAIL_PROVIDER = 'dev'
+process.env.JWT_ACCESS_TTL = '600'
+process.env.JWT_REFRESH_TTL = '2592000'

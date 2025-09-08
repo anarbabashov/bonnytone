@@ -1,0 +1,101 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  emailVerifiedAt DateTime?
+  passwordHash    String?
+  displayName     String?
+  avatarUrl       String?
+  isBlocked       Boolean   @default(false)
+
+  mfaEnabled   Boolean @default(false)
+  mfaSecretEnc String? // encrypted server-side
+
+  sessions           Session[]
+  refreshTokens      RefreshToken[]
+  emailActionTokens  EmailActionToken[]
+  auditLogs          AuditLog[]
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Session {
+  id            String         @id @default(cuid())
+  userId        String
+  ip            String?
+  userAgent     String?
+  createdAt     DateTime       @default(now())
+  expiresAt     DateTime
+  revokedAt     DateTime?
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokens RefreshToken[]
+  
+  @@index([userId])
+}
+
+model RefreshToken {
+  id            String    @id @default(cuid())
+  userId        String
+  sessionId     String?
+  tokenHash     String    @unique // store hash, never plaintext
+  tokenFamily   String    // family ID for reuse detection
+  issuedAt      DateTime  @default(now())
+  expiresAt     DateTime
+  rotatedAt     DateTime?
+  revokedAt     DateTime?
+  reusedAt      DateTime? // track when token was reused (security violation)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session       Session?  @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  
+  @@index([userId])
+  @@index([sessionId])
+  @@index([tokenFamily])
+}
+
+model EmailActionToken {
+  id          String    @id @default(cuid())
+  userId      String
+  type        String // 'verify_email' | 'password_reset' | 'change_email'
+  tokenHash   String    @unique
+  targetEmail String?
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  ip        String?
+  outcome   String
+  createdAt DateTime @default(now())
+  
+  @@index([email])
+  @@index([ip])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  actor     String // 'system' | `user:${id}`
+  action    String // 'auth.register' | ...
+  meta      Json?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@index([userId])
+}
