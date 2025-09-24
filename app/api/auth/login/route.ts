@@ -4,13 +4,15 @@ import { prisma } from '@/lib/prisma'
 import { verifyPassword, needsRehash, hashPassword } from '@/lib/auth/crypto'
 import { createSession } from '@/lib/auth/session'
 import { setAccessTokenCookie, setRefreshTokenCookie, setSessionCookie } from '@/lib/auth/cookies'
-import { 
-  checkRateLimit, 
+import {
+  checkRateLimit,
   loginLimiterIP,
   loginLimiterEmail,
-  getClientIp, 
-  penalizeFailedLogin, 
-  resetLoginAttempts 
+  getClientIp,
+  penalizeFailedLogin,
+  resetLoginAttempts,
+  checkEscalatingBackoff,
+  applyEscalatingPenalty
 } from '@/lib/auth/rates'
 import { logAuthEvent } from '@/lib/observability'
 import { authMetrics, timeAuthRequest } from '@/lib/observability/metrics'
@@ -37,7 +39,33 @@ export async function POST(request: NextRequest) {
     const { email, password, mfaCode } = result.data
     const emailLower = email.toLowerCase()
 
-    // Check rate limits for this email and IP (matching security contracts)
+    // Check escalating backoff first (more restrictive)
+    const [emailBackoff, ipBackoff] = await Promise.all([
+      checkEscalatingBackoff(emailLower),
+      checkEscalatingBackoff(ip)
+    ])
+
+    if (emailBackoff.blocked || ipBackoff.blocked) {
+      const blockedBackoff = emailBackoff.blocked ? emailBackoff : ipBackoff
+      const retryAfterSeconds = Math.ceil((blockedBackoff.retryAfterMs || 300000) / 1000)
+
+      authMetrics.httpResponse(429, '/api/auth/login')
+      authMetrics.rateLimitHit('login', emailBackoff.blocked ? 'email' : 'ip')
+
+      const response = NextResponse.json(
+        {
+          error: `Account temporarily locked due to too many failed attempts. Please try again in ${Math.ceil(retryAfterSeconds / 60)} minutes.`,
+          retryAfterSeconds,
+          escalatingBackoff: true
+        },
+        { status: 429 }
+      )
+
+      response.headers.set('Retry-After', retryAfterSeconds.toString())
+      return response
+    }
+
+    // Check standard rate limits for this email and IP
     const [emailRateLimit, ipRateLimit] = await Promise.all([
       checkRateLimit(loginLimiterEmail, emailLower),
       checkRateLimit(loginLimiterIP, ip),
@@ -46,9 +74,9 @@ export async function POST(request: NextRequest) {
     if (!emailRateLimit.success || !ipRateLimit.success) {
       authMetrics.httpResponse(429, '/api/auth/login')
       authMetrics.rateLimitHit('login', emailRateLimit.success ? 'ip' : 'email')
-      
+
       return NextResponse.json(
-        { error: 'Too many failed login attempts. Please try again later.' },
+        { error: 'Too many login attempts. Please try again later.' },
         { status: 429 }
       )
     }
@@ -70,16 +98,21 @@ export async function POST(request: NextRequest) {
 
     // Verify user exists and password is correct
     if (!user || !user.passwordHash || !(await verifyPassword(user.passwordHash, password))) {
-      await penalizeFailedLogin(emailLower, ip)
-      
+      // Apply escalating penalties
+      await Promise.all([
+        penalizeFailedLogin(emailLower, ip),
+        applyEscalatingPenalty(emailLower),
+        applyEscalatingPenalty(ip)
+      ])
+
       // Emit metrics
       authMetrics.loginFailed('invalid_credentials')
       authMetrics.httpResponse(401, '/api/auth/login')
-      
+
       // Log failed login
-      logAuthEvent('login_failed', user?.id, undefined, ip, { 
-        email: emailLower, 
-        reason: 'invalid_credentials' 
+      logAuthEvent('login_failed', user?.id, undefined, ip, {
+        email: emailLower,
+        reason: 'invalid_credentials'
       })
 
       // Record login attempt
@@ -170,17 +203,22 @@ export async function POST(request: NextRequest) {
         const decryptedSecret = decryptMFASecret(user.mfaSecretEnc, user.id)
         
         if (!verifyTOTPCode(decryptedSecret, mfaCode)) {
-          await penalizeFailedLogin(emailLower, ip)
-          
+          // Apply escalating penalties for MFA failures
+          await Promise.all([
+            penalizeFailedLogin(emailLower, ip),
+            applyEscalatingPenalty(emailLower),
+            applyEscalatingPenalty(ip)
+          ])
+
           authMetrics.loginFailed('invalid_mfa_code')
           authMetrics.mfaEvent('verify_fail')
           authMetrics.httpResponse(401, '/api/auth/login')
-          
+
           logAuthEvent('login_failed', user.id, undefined, ip, {
             email: emailLower,
             reason: 'invalid_mfa_code'
           })
-          
+
           return NextResponse.json(
             { error: 'Invalid MFA code' },
             { status: 401 }

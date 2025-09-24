@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -17,17 +17,7 @@ export default function VerifyEmailPage() {
   const [message, setMessage] = useState('')
   const [resending, setResending] = useState(false)
 
-  useEffect(() => {
-    if (!token) {
-      setStatus('error')
-      setMessage('No verification token provided')
-      return
-    }
-
-    verifyEmail(token)
-  }, [token])
-
-  const verifyEmail = async (token: string) => {
+  const verifyEmail = useCallback(async (token: string) => {
     try {
       const response = await fetch(`/api/auth/verify-email?token=${encodeURIComponent(token)}`, {
         method: 'GET'
@@ -58,7 +48,17 @@ export default function VerifyEmailPage() {
       setStatus('error')
       setMessage('Network error. Please check your connection and try again.')
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    if (!token) {
+      setStatus('error')
+      setMessage('No verification token provided')
+      return
+    }
+
+    verifyEmail(token)
+  }, [token, verifyEmail])
 
   const handleResendVerification = async () => {
     const email = searchParams.get('email')
@@ -184,7 +184,7 @@ export default function VerifyEmailPage() {
               </div>
               <CardTitle className="text-2xl font-bold text-red-600">Verification Failed</CardTitle>
               <CardDescription>
-                We couldn't verify your email address
+                We couldn&apos;t verify your email address
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

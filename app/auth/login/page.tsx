@@ -89,6 +89,14 @@ export default function LoginPage() {
           setError(`${data.error} Need a new verification link? Check the registration page.`)
           return
         }
+        if (response.status === 429) {
+          if (data.escalatingBackoff) {
+            setError(`${data.error} This is for your account security.`)
+          } else {
+            setError(data.error || 'Too many attempts. Please try again later.')
+          }
+          return
+        }
         throw new Error(data.error || 'Login failed')
       }
 
@@ -222,7 +230,7 @@ export default function LoginPage() {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">
-                  Don't have an account?
+                  Don&apos;t have an account?
                 </span>
               </div>
             </div>

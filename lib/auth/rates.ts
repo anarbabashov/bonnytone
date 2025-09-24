@@ -125,7 +125,7 @@ export function getClientIp(request: Request): string {
 
 // Helper function to handle rate limiting
 export async function checkRateLimit(
-  limiter: RateLimiterRedis,
+  limiter: RateLimiterRedis | RateLimiterMemory,
   key: string,
   points: number = 1
 ): Promise<{ success: boolean; remainingPoints?: number; msBeforeNext?: number }> {
@@ -170,7 +170,7 @@ export function createRateLimitResponse(
 
 // Enhanced rate limit check with proper error response
 export async function checkRateLimitWithResponse(
-  limiter: RateLimiterRedis,
+  limiter: RateLimiterRedis | RateLimiterMemory,
   key: string,
   errorMessage: string,
   points: number = 1
@@ -192,7 +192,15 @@ export async function checkRateLimitWithResponse(
   }
 }
 
-// Penalty for failed login attempts
+// Enhanced escalating backoff rate limiter
+export const escalatingLoginLimiter = createRateLimiter({
+  keyPrefix: 'escalating_login',
+  points: 5, // 5 attempts before escalating (50 in dev)
+  duration: 300, // Per 5 minutes
+  blockDuration: 300, // Initial 5 minute block (1 min in dev)
+})
+
+// Penalty for failed login attempts with escalating backoff
 export async function penalizeFailedLogin(email: string, ip: string): Promise<void> {
   await Promise.all([
     loginLimiter.consume(email),
@@ -200,11 +208,105 @@ export async function penalizeFailedLogin(email: string, ip: string): Promise<vo
   ])
 }
 
+// Check if user/IP should be blocked due to escalating backoff
+export async function checkEscalatingBackoff(identifier: string): Promise<{
+  blocked: boolean
+  remainingAttempts: number
+  blockDurationMs: number
+  retryAfterMs?: number
+}> {
+  const key = `escalating_${identifier}`
+
+  try {
+    // Get current state without consuming a point
+    const result = await escalatingLoginLimiter.get(key)
+
+    if (!result) {
+      // No previous attempts
+      return {
+        blocked: false,
+        remainingAttempts: 5,
+        blockDurationMs: 0
+      }
+    }
+
+    const attemptsUsed = 5 - (result.remainingPoints || 0)
+    const remainingAttempts = Math.max(0, result.remainingPoints || 0)
+
+    if (remainingAttempts === 0) {
+      // User is blocked - calculate escalating duration
+      const blockDurationMs = calculateEscalatingDuration(attemptsUsed)
+
+      return {
+        blocked: true,
+        remainingAttempts: 0,
+        blockDurationMs,
+        retryAfterMs: result.msBeforeNext || blockDurationMs
+      }
+    }
+
+    return {
+      blocked: false,
+      remainingAttempts,
+      blockDurationMs: 0
+    }
+  } catch (error) {
+    console.error('Error checking escalating backoff:', error)
+    return {
+      blocked: false,
+      remainingAttempts: 5,
+      blockDurationMs: 0
+    }
+  }
+}
+
+// Apply escalating penalty for failed login
+export async function applyEscalatingPenalty(identifier: string): Promise<void> {
+  const key = `escalating_${identifier}`
+
+  try {
+    await escalatingLoginLimiter.consume(key)
+  } catch (rateLimiterRes: any) {
+    // User has exceeded limit - apply escalating block
+    const attemptsUsed = 5
+    const escalatingDuration = calculateEscalatingDuration(attemptsUsed)
+
+    // Create a new block with escalating duration
+    const customLimiter = createRateLimiter({
+      keyPrefix: 'escalating_custom',
+      points: 1,
+      duration: Math.ceil(escalatingDuration / 1000), // Convert to seconds
+      blockDuration: Math.ceil(escalatingDuration / 1000)
+    })
+
+    try {
+      await customLimiter.consume(key)
+    } catch (error) {
+      // Expected - user is now blocked for escalating duration
+    }
+  }
+}
+
+// Calculate escalating block duration based on attempts
+function calculateEscalatingDuration(attemptCount: number): number {
+  if (isDevelopment) {
+    // Shorter durations for development
+    return Math.min(60000, 5000 * attemptCount) // Max 1 minute in dev
+  }
+
+  // Escalating backoff: 5min, 10min, 30min, 1hr, 2hr
+  const escalatingMinutes = [5, 10, 30, 60, 120]
+  const index = Math.min(attemptCount - 5, escalatingMinutes.length - 1)
+  return escalatingMinutes[Math.max(0, index)] * 60 * 1000 // Convert to milliseconds
+}
+
 // Reset login attempts on successful login
 export async function resetLoginAttempts(email: string, ip: string): Promise<void> {
   await Promise.all([
     loginLimiter.delete(email),
     loginLimiter.delete(ip),
+    escalatingLoginLimiter.delete(`escalating_${email}`),
+    escalatingLoginLimiter.delete(`escalating_${ip}`),
   ])
 }
 

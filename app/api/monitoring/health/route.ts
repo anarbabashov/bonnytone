@@ -23,17 +23,24 @@ export async function GET(request: NextRequest) {
   }
 
   // Redis health check
-  try {
-    const start = Date.now()
-    await redis.ping()
-    checks.redis = {
-      status: 'ok',
-      duration: Date.now() - start,
+  if (redis) {
+    try {
+      const start = Date.now()
+      await redis.ping()
+      checks.redis = {
+        status: 'ok',
+        duration: Date.now() - start,
+      }
+    } catch (error) {
+      checks.redis = {
+        status: 'error',
+        message: error instanceof Error ? error.message : 'Redis connection failed',
+      }
     }
-  } catch (error) {
+  } else {
     checks.redis = {
       status: 'error',
-      message: error instanceof Error ? error.message : 'Redis connection failed',
+      message: 'Redis not configured',
     }
   }
 
