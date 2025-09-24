@@ -85,6 +85,10 @@ export default function LoginPage() {
           setError('Enter your 6-digit MFA code')
           return
         }
+        if (response.status === 403 && data.error?.includes('verify your email')) {
+          setError(`${data.error} Need a new verification link? Check the registration page.`)
+          return
+        }
         throw new Error(data.error || 'Login failed')
       }
 

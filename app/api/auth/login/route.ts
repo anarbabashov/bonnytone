@@ -101,10 +101,10 @@ export async function POST(request: NextRequest) {
     if (user.isBlocked) {
       authMetrics.loginFailed('user_blocked')
       authMetrics.httpResponse(403, '/api/auth/login')
-      
-      logAuthEvent('login_failed', user.id, undefined, ip, { 
-        email: emailLower, 
-        reason: 'user_blocked' 
+
+      logAuthEvent('login_failed', user.id, undefined, ip, {
+        email: emailLower,
+        reason: 'user_blocked'
       })
 
       await prisma.loginAttempt.create({
@@ -117,6 +117,30 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json(
         { error: 'Account is blocked. Please contact support.' },
+        { status: 403 }
+      )
+    }
+
+    // Check if email is verified
+    if (!user.emailVerifiedAt) {
+      authMetrics.loginFailed('email_not_verified')
+      authMetrics.httpResponse(403, '/api/auth/login')
+
+      logAuthEvent('login_failed', user.id, undefined, ip, {
+        email: emailLower,
+        reason: 'email_not_verified'
+      })
+
+      await prisma.loginAttempt.create({
+        data: {
+          email: emailLower,
+          ip,
+          outcome: 'email_not_verified',
+        },
+      })
+
+      return NextResponse.json(
+        { error: 'Please verify your email address before logging in. Check your inbox for the verification link.' },
         { status: 403 }
       )
     }
