@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { hashPassword } from '@/lib/auth/crypto'
 import { createEmailActionToken } from '@/lib/auth/tokens'
 import { sendEmail } from '@/lib/auth/email'
+import { getServerUrl } from '@/lib/utils'
 import { checkRateLimit, registerLimiterIP, registerLimiterEmail, getClientIp } from '@/lib/auth/rates'
 import { logAuthEvent } from '@/lib/observability'
 import { authMetrics, timeAuthRequest } from '@/lib/observability/metrics'
@@ -89,11 +90,14 @@ export async function POST(request: NextRequest) {
       expiresInMinutes: 1440, // 24 hours
     })
 
+    // Get server URL for email links
+    const serverUrl = getServerUrl(request)
+
     // Send verification email
     await sendEmail('verify_email', user.email, {
       token: verificationToken,
       displayName: user.displayName,
-    })
+    }, serverUrl)
 
     // Emit success metrics
     authMetrics.registerSuccess('email')

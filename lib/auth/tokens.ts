@@ -54,13 +54,42 @@ export async function createEmailActionToken(options: CreateTokenOptions): Promi
   return token
 }
 
+// Verify token without consuming it (for validation purposes)
+export async function verifyEmailActionToken(
+  token: string,
+  expectedType: TokenType
+): Promise<{ userId: string; targetEmail?: string } | null> {
+  const tokenHmac = createTokenHmac(token)
+
+  // Find valid token by HMAC without consuming it
+  const emailToken = await prisma.emailActionToken.findFirst({
+    where: {
+      tokenHash: tokenHmac,
+      type: expectedType,
+      consumedAt: null,
+      expiresAt: {
+        gt: new Date(),
+      },
+    },
+  })
+
+  if (!emailToken) {
+    return null
+  }
+
+  return {
+    userId: emailToken.userId,
+    targetEmail: emailToken.targetEmail || undefined,
+  }
+}
+
 // Verify and consume email action token (single-use per security contracts)
 export async function verifyAndConsumeEmailActionToken(
   token: string,
   expectedType: TokenType
 ): Promise<{ userId: string; targetEmail?: string } | null> {
   const tokenHmac = createTokenHmac(token)
-  
+
   // Find valid token by HMAC
   const emailToken = await prisma.emailActionToken.findFirst({
     where: {
@@ -72,17 +101,17 @@ export async function verifyAndConsumeEmailActionToken(
       },
     },
   })
-  
+
   if (!emailToken) {
     return null
   }
-  
+
   // Mark token as consumed (single-use per security contracts)
   await prisma.emailActionToken.update({
     where: { id: emailToken.id },
     data: { consumedAt: new Date() },
   })
-  
+
   return {
     userId: emailToken.userId,
     targetEmail: emailToken.targetEmail || undefined,

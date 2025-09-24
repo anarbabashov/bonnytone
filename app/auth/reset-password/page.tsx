@@ -113,7 +113,7 @@ export default function ResetPasswordPage() {
         },
         body: JSON.stringify({
           token,
-          password: formData.password
+          newPassword: formData.password
         }),
       })
 

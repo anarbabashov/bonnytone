@@ -4,7 +4,6 @@ import { Client as PostmarkClient } from 'postmark'
 
 const EMAIL_PROVIDER = process.env.EMAIL_PROVIDER || 'dev'
 const EMAIL_FROM = process.env.EMAIL_FROM || 'ArtistMgmt <no-reply@artistmgmt.org>'
-const APP_URL = process.env.APP_URL || 'http://localhost:3000'
 
 // Email template types
 export type TemplateId =
@@ -41,10 +40,10 @@ async function ensureMailboxDir(): Promise<void> {
 }
 
 // Generate email content from template and data
-function generateEmailContent(templateId: TemplateId, data: Record<string, any>): { subject: string; html: string; text: string } {
+function generateEmailContent(templateId: TemplateId, data: Record<string, any>, appUrl: string): { subject: string; html: string; text: string } {
   switch (templateId) {
     case 'verify_email':
-      const verifyUrl = `${APP_URL}/auth/verify-email?token=${data.token}`
+      const verifyUrl = `${appUrl}/auth/verify-email?token=${data.token}`
       return {
         subject: 'Verify your email address - ArtistMgmt',
         html: `
@@ -92,7 +91,7 @@ This link will expire in 24 hours.
       }
 
     case 'password_reset':
-      const resetUrl = `${APP_URL}/auth/reset-password?token=${data.token}`
+      const resetUrl = `${appUrl}/auth/reset-password?token=${data.token}`
       return {
         subject: 'Reset your password - ArtistMgmt',
         html: `
@@ -140,7 +139,7 @@ This link will expire in 30 minutes.
       }
 
     case 'email_change_confirm':
-      const confirmUrl = `${APP_URL}/account/change-email/confirm?token=${data.token}`
+      const confirmUrl = `${appUrl}/account/change-email/confirm?token=${data.token}`
       return {
         subject: 'Confirm your new email address - ArtistMgmt',
         html: `
@@ -265,12 +264,15 @@ If this was you, you can ignore this email. If not, please secure your account i
 }
 
 // Template-based email sending
-export async function sendEmail(tpl: TemplateId, to: string, data: Record<string, any>): Promise<boolean> {
+export async function sendEmail(tpl: TemplateId, to: string, data: Record<string, any>, appUrl?: string): Promise<boolean> {
   try {
+    // Use provided appUrl or fallback to environment variable or localhost
+    const baseUrl = appUrl || process.env.APP_URL || 'http://localhost:3000'
+
     switch (EMAIL_PROVIDER) {
       case 'postmark':
         if (!postmark) throw new Error('Postmark client not configured')
-        
+
         const templateAlias = POSTMARK_TEMPLATES[tpl]
         await postmark.sendEmailWithTemplate({
           From: EMAIL_FROM,
@@ -278,7 +280,7 @@ export async function sendEmail(tpl: TemplateId, to: string, data: Record<string
           TemplateAlias: templateAlias,
           TemplateModel: {
             ...data,
-            app_url: APP_URL,
+            app_url: baseUrl,
             app_name: 'ArtistMgmt',
           },
         })
@@ -286,8 +288,8 @@ export async function sendEmail(tpl: TemplateId, to: string, data: Record<string
 
       case 'dev':
         await ensureMailboxDir()
-        
-        const emailContent = generateEmailContent(tpl, data)
+
+        const emailContent = generateEmailContent(tpl, data, baseUrl)
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
         const filename = `${timestamp}-${tpl}-${to.replace('@', '_at_')}.eml`
         const filepath = path.join(DEV_MAILBOX_DIR, filename)
@@ -328,29 +330,32 @@ export async function sendEmail(tpl: TemplateId, to: string, data: Record<string
 }
 
 // Legacy functions for backward compatibility
-export function createVerificationEmail(email: string, token: string) {
+export function createVerificationEmail(email: string, token: string, appUrl?: string) {
+  const baseUrl = appUrl || process.env.APP_URL || 'http://localhost:3000'
   return {
     to: email,
     subject: 'Verify your email address',
-    html: generateEmailContent('verify_email', { token }).html,
-    text: generateEmailContent('verify_email', { token }).text,
+    html: generateEmailContent('verify_email', { token }, baseUrl).html,
+    text: generateEmailContent('verify_email', { token }, baseUrl).text,
   }
 }
 
-export function createPasswordResetEmail(email: string, token: string) {
+export function createPasswordResetEmail(email: string, token: string, appUrl?: string) {
+  const baseUrl = appUrl || process.env.APP_URL || 'http://localhost:3000'
   return {
     to: email,
     subject: 'Reset your password',
-    html: generateEmailContent('password_reset', { token }).html,
-    text: generateEmailContent('password_reset', { token }).text,
+    html: generateEmailContent('password_reset', { token }, baseUrl).html,
+    text: generateEmailContent('password_reset', { token }, baseUrl).text,
   }
 }
 
-export function createEmailChangeEmail(email: string, newEmail: string, token: string) {
+export function createEmailChangeEmail(email: string, newEmail: string, token: string, appUrl?: string) {
+  const baseUrl = appUrl || process.env.APP_URL || 'http://localhost:3000'
   return {
     to: newEmail,
     subject: 'Confirm your new email address',
-    html: generateEmailContent('email_change_confirm', { oldEmail: email, newEmail, token }).html,
-    text: generateEmailContent('email_change_confirm', { oldEmail: email, newEmail, token }).text,
+    html: generateEmailContent('email_change_confirm', { oldEmail: email, newEmail, token }, baseUrl).html,
+    text: generateEmailContent('email_change_confirm', { oldEmail: email, newEmail, token }, baseUrl).text,
   }
 }

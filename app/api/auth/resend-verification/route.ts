@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { verifyAccessToken } from '@/lib/auth/jwt'
 import { createEmailActionToken, revokeUserTokens } from '@/lib/auth/tokens'
 import { sendEmail } from '@/lib/auth/email'
+import { getServerUrl } from '@/lib/utils'
 import { getAccessTokenFromRequest } from '@/lib/auth/cookies'
 import { checkRateLimit, emailLimiter, getClientIp } from '@/lib/auth/rates'
 import { logAuthEvent } from '@/lib/observability'
@@ -88,10 +89,13 @@ export async function POST(request: NextRequest) {
       expiresInMinutes: 1440, // 24 hours
     })
 
+    // Get server URL for email links
+    const serverUrl = getServerUrl(request)
+
     // Send verification email
     const emailSent = await sendEmail('verify_email', user.email, {
       token: verificationToken,
-    })
+    }, serverUrl)
 
     if (!emailSent) {
       console.error('Failed to send verification email')

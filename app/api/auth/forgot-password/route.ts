@@ -3,6 +3,7 @@ import { forgotPasswordSchema } from '@/lib/zod'
 import { prisma } from '@/lib/prisma'
 import { createEmailActionToken, revokeUserTokens } from '@/lib/auth/tokens'
 import { sendEmail } from '@/lib/auth/email'
+import { getServerUrl } from '@/lib/utils'
 import { checkRateLimit, passwordResetLimiter, getClientIp } from '@/lib/auth/rates'
 import { logAuthEvent } from '@/lib/observability'
 
@@ -45,19 +46,22 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Always return success to prevent email enumeration
+    if (!user) {
+      logAuthEvent('password_reset_attempt', undefined, undefined, ip, {
+        email: emailLower,
+        reason: 'user_not_found'
+      })
+
+      return NextResponse.json({
+        error: 'Email not found. Please check your email address or register for a new account.',
+        code: 'EMAIL_NOT_FOUND'
+      }, { status: 404 })
+    }
+
+    // Success response for existing users
     const successResponse = NextResponse.json({
       message: 'If an account with that email exists, a password reset link has been sent.',
     })
-
-    if (!user) {
-      logAuthEvent('password_reset_attempt', undefined, undefined, ip, { 
-        email: emailLower, 
-        reason: 'user_not_found' 
-      })
-      
-      return successResponse
-    }
 
     if (user.isBlocked) {
       logAuthEvent('password_reset_attempt', user.id, undefined, ip, { 
@@ -78,10 +82,13 @@ export async function POST(request: NextRequest) {
       expiresInMinutes: 30, // 30 minutes (per spec)
     })
 
+    // Get server URL for email links
+    const serverUrl = getServerUrl(request)
+
     // Send password reset email
     const emailSent = await sendEmail('password_reset', user.email, {
       token: resetToken,
-    })
+    }, serverUrl)
 
     if (!emailSent) {
       console.error('Failed to send password reset email')
