@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyAccessJwt } from '@/lib/auth/jwt'
 import { prisma } from '@/lib/prisma'
 import { validateCSRFResistance, addSecurityHeaders } from '@/lib/auth/csrf'
+import { getAccessTokenFromRequest } from '@/lib/auth/cookies'
 
 export interface AuthContext {
   userId: string
@@ -49,11 +50,20 @@ export async function authGuard(
       }
     }
 
-    // Extract access token from Authorization header
+    // Extract access token from Authorization header or cookies
+    let accessToken: string | null = null
+
     const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      accessToken = authHeader.substring(7) // Remove 'Bearer ' prefix
+    } else {
+      // Fall back to cookie-based auth
+      accessToken = getAccessTokenFromRequest(request)
+    }
+
+    if (!accessToken) {
       const response = NextResponse.json(
-        { error: 'Missing or invalid authorization header' },
+        { error: 'Missing or invalid access token' },
         { status: 401 }
       )
       addSecurityHeaders(response.headers)
@@ -62,8 +72,6 @@ export async function authGuard(
         response,
       }
     }
-
-    const accessToken = authHeader.substring(7) // Remove 'Bearer ' prefix
 
     // Verify access JWT
     const tokenPayload = await verifyAccessJwt(accessToken)

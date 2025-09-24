@@ -55,15 +55,9 @@ export function validateCSRFResistance(request: NextRequest): {
     }
   }
 
-  // Ensure Authorization header is present for authenticated endpoints
-  // (This is handled by the auth guard, but we document it here)
-  const authHeader = request.headers.get('authorization')
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return {
-      valid: false,
-      reason: 'Bearer token required in Authorization header'
-    }
-  }
+  // For GET requests, we don't require Authorization header since we support cookie auth
+  // For state-changing operations, the auth guard will handle token validation
+  // This allows cookie-based authentication for read operations
 
   return { valid: true }
 }

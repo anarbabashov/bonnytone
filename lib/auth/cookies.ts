@@ -17,7 +17,8 @@ const defaultCookieOptions: CookieOptions = {
   secure: IS_PRODUCTION,
   sameSite: 'lax',
   path: '/',
-  domain: COOKIE_DOMAIN,
+  // Don't set domain for localhost in development - let browser handle it
+  domain: IS_PRODUCTION ? COOKIE_DOMAIN : undefined,
 }
 
 // Set access token cookie (shorter expiry)

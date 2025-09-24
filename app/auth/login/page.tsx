@@ -9,9 +9,11 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { useAuth } from '@/lib/auth/AuthContext'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { login } = useAuth()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -67,6 +69,7 @@ export default function LoginPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           email: formData.email.toLowerCase().trim(),
           password: formData.password,
@@ -85,7 +88,8 @@ export default function LoginPage() {
         throw new Error(data.error || 'Login failed')
       }
 
-      // Success - redirect to dashboard
+      // Success - update auth context and redirect to dashboard
+      login(data.user)
       router.push('/')
       
     } catch (err) {

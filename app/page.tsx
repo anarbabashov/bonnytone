@@ -1,7 +1,6 @@
-import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { User } from 'lucide-react'
+import AuthButtons from "@/components/layout/AuthButtons"
 
 export default function Home() {
   return (
@@ -15,19 +14,7 @@ export default function Home() {
                 ArtistMgmt
               </h1>
             </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/auth/login">
-                <Button variant="outline" size="sm">
-                  <User className="mr-2 h-4 w-4" />
-                  Sign In
-                </Button>
-              </Link>
-              <Link href="/auth/register">
-                <Button size="sm">
-                  Get Started
-                </Button>
-              </Link>
-            </div>
+            <AuthButtons />
           </div>
         </div>
       </header>
