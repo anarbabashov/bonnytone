@@ -6,8 +6,8 @@ import { AuthProvider } from "@/lib/auth/AuthContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Artist Management Dashboard",
-  description: "Dashboard for artist management",
+  title: "Management Dashboard",
+  description: "Dashboard for management",
 };
 
 export default function RootLayout({
@@ -20,7 +20,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <div className="min-h-screen bg-background">
-            <main className="container mx-auto py-8">{children}</main>
+            <main>{children}</main>
           </div>
         </AuthProvider>
       </body>
