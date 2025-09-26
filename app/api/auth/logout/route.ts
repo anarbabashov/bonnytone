@@ -8,23 +8,33 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
-    // Get access token and session ID
-    const accessToken = getAccessTokenFromRequest(request)
+    // Get access token from Authorization header or cookies
+    let accessToken: string | null = null
+    const authHeader = request.headers.get('authorization')
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      accessToken = authHeader.substring(7) // Remove 'Bearer ' prefix
+    } else {
+      accessToken = getAccessTokenFromRequest(request)
+    }
+
     const sessionId = getSessionIdFromRequest(request)
-    
+
     let userId: string | undefined
-    
-    // Try to get user ID from access token if available
+    let sessionIdFromToken: string | undefined
+
+    // Try to get user ID and session ID from access token if available
     if (accessToken) {
       const tokenPayload = await verifyAccessToken(accessToken)
       if (tokenPayload) {
         userId = tokenPayload.sub
+        sessionIdFromToken = tokenPayload.sid
       }
     }
 
-    // Revoke session if we have a session ID
-    if (sessionId) {
-      await revokeSession(sessionId)
+    // Revoke session - prefer session ID from token, fall back to cookie
+    const sessionToRevoke = sessionIdFromToken || sessionId
+    if (sessionToRevoke) {
+      await revokeSession(sessionToRevoke)
     }
 
     // Clear cookies
@@ -35,7 +45,7 @@ export async function POST(request: NextRequest) {
     clearAuthCookies(response)
 
     // Log logout event
-    logAuthEvent('logout', userId, sessionId || undefined)
+    logAuthEvent('logout', userId, sessionToRevoke || undefined)
 
     return response
 

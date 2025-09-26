@@ -91,6 +91,26 @@ export async function authGuard(
       sessionId: tokenPayload.sid,
     }
 
+    // Validate that the session is still active
+    const session = await prisma.session.findUnique({
+      where: { id: context.sessionId },
+      select: {
+        id: true,
+        revokedAt: true,
+        expiresAt: true,
+      },
+    })
+
+    if (!session || session.revokedAt || session.expiresAt < new Date()) {
+      return {
+        success: false,
+        response: NextResponse.json(
+          { error: 'Session has been revoked or expired' },
+          { status: 401 }
+        ),
+      }
+    }
+
     // Optionally include user data
     if (options.includeUserData || options.requireEmailVerified || options.requireNotBlocked) {
       const user = await prisma.user.findUnique({
