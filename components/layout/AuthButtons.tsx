@@ -40,7 +40,7 @@ export default function AuthButtons() {
       <Link href="/auth/login">
         <Button variant="outline" size="sm">
           <User className="mr-2 h-4 w-4" />
-          Login
+          Sign In
         </Button>
       </Link>
       <Link href="/auth/register">

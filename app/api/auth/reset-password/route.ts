@@ -163,10 +163,13 @@ export async function POST(request: NextRequest) {
     // Hash new password
     const passwordHash = await hashPassword(newPassword)
 
-    // Update user password
+    // Update user password and verify email (since they accessed the reset link from their email)
     await prisma.user.update({
       where: { id: user.id },
-      data: { passwordHash },
+      data: {
+        passwordHash,
+        emailVerifiedAt: new Date()
+      },
     })
 
     // Revoke all existing sessions for security
