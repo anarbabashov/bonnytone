@@ -6,8 +6,8 @@ import { AuthProvider } from "@/lib/auth/AuthContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Management Dashboard",
-  description: "Dashboard for management",
+  title: "Artist Manager",
+  description: "SoundCloud artist management platform",
 };
 
 export default function RootLayout({
