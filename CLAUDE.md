@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an Artist Management Dashboard built with Next.js 13, TypeScript, and shadcn/ui components. The application uses:
+Bonny Tone Radio — an online radio platform built with Next.js 13, TypeScript, and shadcn/ui components. Users can create accounts for personalized features like mix/DJ reminders, favoriting tracks, and more. The application uses:
 - **Next.js 13** with App Router (`app/` directory structure)
 - **TypeScript** with strict configuration
 - **Tailwind CSS** for styling with shadcn/ui component library
@@ -47,24 +47,6 @@ The app uses Zustand with a centralized store (`store/store.ts`) that manages:
 - CSS variables enabled for theming
 - Base color scheme: zinc
 - Global styles in `app/globals.css`
-
-## Future Strategy & Roadmap
-
-**Reference Document**: `/Users/anarbabashov/claude-code-notes/bonnytonemanager technical task.md`
-
-This application is planned to be a SoundCloud bonnytonemanagement platform with the following key features:
-- **SoundCloud API Integration** - Bot automation for following/unfollowing users
-- **Artist Dashboard** - Automatic scheduling, analytics, follow management
-- **Tiered Subscription Model** - Basic ($15), Gold ($25), Platinum ($35) monthly plans
-- **Core Bot Functionality** - Algorithm-based targeting of similar music listeners
-- **Analytics & Insights** - Follower growth tracking and engagement metrics
-
-The current codebase is the foundation dashboard that will be expanded to include:
-1. SoundCloud OAuth integration and middleware
-2. Subscription management and payment processing  
-3. Bot scheduling and automation features
-4. Analytics visualization components
-5. User management and tiered access controls
 
 ## Key Files
 - `components.json` - shadcn/ui configuration (do not modify manually)

@@ -405,7 +405,7 @@ class AlertingService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'ArtistManager-SecurityAlerts/1.0',
+        'User-Agent': 'BonnyToneRadio-SecurityAlerts/1.0',
       },
       body: JSON.stringify(payload),
     })

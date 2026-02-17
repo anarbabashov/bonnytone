@@ -2,7 +2,7 @@
 
 ## Security Architecture Overview
 
-The Artist Management authentication system implements **defense-in-depth security** with multiple layers of protection:
+The Bonny Tone Radio authentication system implements **defense-in-depth security** with multiple layers of protection:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐

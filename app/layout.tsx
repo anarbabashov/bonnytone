@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Bonny Tone",
-  description: "SoundCloud bonnytonemanagement platform",
+  description: "Bonny Tone Radio - Online radio platform",
 };
 
 export default function RootLayout({

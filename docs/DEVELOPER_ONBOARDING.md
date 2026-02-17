@@ -6,7 +6,7 @@
 ```bash
 # Clone and install
 git clone <repo-url>
-cd artist-manager
+cd bonnytone-radio
 npm install
 
 # Set up environment
