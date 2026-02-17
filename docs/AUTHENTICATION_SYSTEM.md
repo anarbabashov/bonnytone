@@ -169,8 +169,8 @@ export async function hashPassword(password: string): Promise<string> {
 ```typescript
 // JWT Configuration
 {
-  issuer: process.env.JWT_ISSUER,           // "artistmgmt"
-  audience: process.env.JWT_AUDIENCE,       // "artistmgmt.app"
+  issuer: process.env.JWT_ISSUER,           // "bonnytone"
+  audience: process.env.JWT_AUDIENCE,       // "bonnytone.app"
   algorithm: "ES256",                       // Elliptic Curve Digital Signature
   accessTokenTTL: 600,                      // 10 minutes
   refreshTokenTTL: 2592000,                 // 30 days
@@ -526,15 +526,15 @@ export const emailProviders = {
 ```typescript
 // Template: verify_email
 {
-  subject: "Verify your email address - ArtistMgmt",
+  subject: "Verify your email address - Bonnytone",
   htmlTemplate: `
-    <h1>Welcome to ArtistMgmt!</h1>
+    <h1>Welcome to Bonnytone!</h1>
     <p>Please verify your email address to complete your registration.</p>
     <a href="${verificationUrl}">Verify Email Address</a>
     <p>This link expires in 24 hours.</p>
   `,
   textTemplate: `
-    Welcome to ArtistMgmt!
+    Welcome to Bonnytone!
     Please verify your email: ${verificationUrl}
     This link expires in 24 hours.
   `
@@ -545,7 +545,7 @@ export const emailProviders = {
 ```typescript
 // Template: password_reset
 {
-  subject: "Reset your password - ArtistMgmt",
+  subject: "Reset your password - Bonnytone",
   htmlTemplate: `
     <h1>Password Reset Request</h1>
     <p>Click the link below to reset your password.</p>
@@ -673,15 +673,15 @@ npm install
 cp .env.example .env.local
 
 # Required Environment Variables:
-DATABASE_URL="postgresql://user:pass@localhost:5432/artistmgmt"
-JWT_ISSUER="artistmgmt"
-JWT_AUDIENCE="artistmgmt.app"
+DATABASE_URL="postgresql://user:pass@localhost:5432/bonnytone"
+JWT_ISSUER="bonnytone"
+JWT_AUDIENCE="bonnytone.app"
 JWT_ACCESS_TTL="600"
 JWT_REFRESH_TTL="2592000"
 JWT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----..."
 JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----..."
 TOKEN_HMAC_SECRET="base64-32-byte-secret"
-EMAIL_FROM="ArtistMgmt <no-reply@artistmgmt.org>"
+EMAIL_FROM="Bonnytone <no-reply@bonnytone.org>"
 EMAIL_PROVIDER="dev"
 APP_URL="http://localhost:3000"
 
@@ -756,11 +756,11 @@ curl -X POST http://localhost:3000/api/auth/login \
 ```bash
 # Production Environment Variables
 NODE_ENV="production"
-DATABASE_URL="postgresql://prod-user:prod-pass@prod-host:5432/artistmgmt"
+DATABASE_URL="postgresql://prod-user:prod-pass@prod-host:5432/bonnytone"
 
 # JWT Configuration (Use strong, unique values)
-JWT_ISSUER="artistmgmt"
-JWT_AUDIENCE="artistmgmt.app"
+JWT_ISSUER="bonnytone"
+JWT_AUDIENCE="bonnytone.app"
 JWT_ALGORITHM="ES256"
 JWT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n[ES256 private key]\n-----END PRIVATE KEY-----"
 JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\n[ES256 public key]\n-----END PUBLIC KEY-----"
@@ -768,19 +768,19 @@ TOKEN_HMAC_SECRET="[base64-encoded 32-byte secret]"
 
 # Email Configuration (Choose one provider)
 EMAIL_PROVIDER="postmark"
-EMAIL_FROM="ArtistMgmt <no-reply@artistmgmt.org>"
+EMAIL_FROM="Bonnytone <no-reply@bonnytone.org>"
 POSTMARK_TOKEN="your-postmark-server-token"
 
 # Security Configuration
-COOKIE_DOMAIN=".artistmgmt.org"
-APP_URL="https://artistmgmt.org"
+COOKIE_DOMAIN=".bonnytone.org"
+APP_URL="https://bonnytone.org"
 
 # Redis (Recommended for production rate limiting)
 REDIS_URL="redis://redis-host:6379"
 
 # Monitoring & Alerts
 ALERT_WEBHOOK_URL="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
-SECURITY_EMAIL="security@artistmgmt.org"
+SECURITY_EMAIL="security@bonnytone.org"
 ```
 
 ### Database Setup

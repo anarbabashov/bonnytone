@@ -50,9 +50,9 @@ The app uses Zustand with a centralized store (`store/store.ts`) that manages:
 
 ## Future Strategy & Roadmap
 
-**Reference Document**: `/Users/anarbabashov/claude-code-notes/artist manager technical task.md`
+**Reference Document**: `/Users/anarbabashov/claude-code-notes/bonnytonemanager technical task.md`
 
-This application is planned to be a SoundCloud artist management platform with the following key features:
+This application is planned to be a SoundCloud bonnytonemanagement platform with the following key features:
 - **SoundCloud API Integration** - Bot automation for following/unfollowing users
 - **Artist Dashboard** - Automatic scheduling, analytics, follow management
 - **Tiered Subscription Model** - Basic ($15), Gold ($25), Platinum ($35) monthly plans

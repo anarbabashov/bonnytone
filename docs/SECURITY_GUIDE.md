@@ -291,7 +291,7 @@ import * as speakeasy from 'speakeasy';
 export function generateMFASecret(): { secret: string; qrCode: string } {
   const secret = speakeasy.generateSecret({
     name: `${APP_NAME}`,
-    issuer: 'ArtistMgmt',
+    issuer: 'Bonnytone',
     length: 32
   });
 

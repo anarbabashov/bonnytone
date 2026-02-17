@@ -166,7 +166,7 @@ export default function RegisterPage() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
           <CardDescription className="text-center">
-            Join ArtistMgmt to start managing your music career
+            Join Bonnytone to start managing your music career
           </CardDescription>
         </CardHeader>
         <CardContent>

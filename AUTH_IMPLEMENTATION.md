@@ -72,7 +72,7 @@ lib/
 
 **Email Templates**: Generated in `lib/auth/email.ts`
 - Multi-format support (HTML + plain text)
-- Professional styling with ArtistMgmt branding
+- Professional styling with Bonnytone branding
 - Secure verification links with tokens
 - 24-hour expiration
 
@@ -157,8 +157,8 @@ lib/
 DATABASE_URL="postgresql://..."
 
 # JWT Configuration
-JWT_ISSUER="artistmgmt"
-JWT_AUDIENCE="artistmgmt.app"
+JWT_ISSUER="bonnytone"
+JWT_AUDIENCE="bonnytone.app"
 JWT_ACCESS_TTL="600"                 # 10 minutes
 JWT_REFRESH_TTL="2592000"            # 30 days
 JWT_ALGORITHM="ES256"
@@ -167,7 +167,7 @@ JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----..."
 TOKEN_HMAC_SECRET="base64-32B+"
 
 # Email Configuration
-EMAIL_FROM="ArtistMgmt <no-reply@artistmgmt.org>"
+EMAIL_FROM="Bonnytone <no-reply@bonnytone.org>"
 EMAIL_PROVIDER="dev"                 # dev|postmark|sendgrid|ses
 POSTMARK_TOKEN="..."
 SENDGRID_API_KEY="..."
@@ -175,7 +175,7 @@ SES_REGION="us-east-1"
 
 # Application
 APP_URL="http://localhost:3000"
-COOKIE_DOMAIN=".artistmgmt.org"
+COOKIE_DOMAIN=".bonnytone.org"
 NODE_ENV="development"
 ```
 
@@ -241,19 +241,19 @@ model EmailActionToken {
 ## Email Templates
 
 ### Verification Email
-- **Subject**: "Verify your email address - ArtistMgmt"
+- **Subject**: "Verify your email address - Bonnytone"
 - **Content**: Welcome message with verification button
 - **Expiry**: 24 hours
 - **Styling**: Professional HTML with fallback text
 
 ### Password Reset Email
-- **Subject**: "Reset your password - ArtistMgmt"
+- **Subject**: "Reset your password - Bonnytone"
 - **Content**: Security-focused reset instructions
 - **Expiry**: 30 minutes
 - **Security**: Clear warning about ignoring if not requested
 
 ### Email Change Confirmation
-- **Subject**: "Confirm your new email address - ArtistMgmt"
+- **Subject**: "Confirm your new email address - Bonnytone"
 - **Content**: Old/new email confirmation
 - **Expiry**: 24 hours
 

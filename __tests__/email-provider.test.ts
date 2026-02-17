@@ -147,7 +147,7 @@ describe('📧 Email Provider Abstraction - Step by Step Tests', () => {
     test('Provider configuration variables are properly structured', () => {
       const emailConfig = {
         EMAIL_PROVIDER: process.env.EMAIL_PROVIDER || 'dev',
-        EMAIL_FROM: process.env.EMAIL_FROM || 'ArtistMgmt <no-reply@artistmgmt.org>',
+        EMAIL_FROM: process.env.EMAIL_FROM || 'Bonnytone <no-reply@bonnytone.org>',
         APP_URL: process.env.APP_URL || 'http://localhost:3000',
         POSTMARK_TOKEN: process.env.POSTMARK_TOKEN,
       }
@@ -191,7 +191,7 @@ describe('📧 Email Provider Abstraction - Step by Step Tests', () => {
           expect(content).toContain('Verify your email address')
           expect(content).toContain(testData.token)
           expect(content).toContain(testData.displayName)
-          expect(content).toContain('From: ArtistMgmt')
+          expect(content).toContain('From: Bonnytone')
           expect(content).toContain('Content-Type: multipart/alternative')
           
           console.log('✅ verify_email template generates correct EML content')
@@ -423,7 +423,7 @@ describe('📧 Email Provider Abstraction - Step by Step Tests', () => {
       await fs.mkdir(mailboxDir, { recursive: true })
 
       const sampleEml = [
-        'From: ArtistMgmt <no-reply@artistmgmt.org>',
+        'From: Bonnytone <no-reply@bonnytone.org>',
         'To: test@example.com',
         'Subject: Test Email Subject',
         'Date: ' + new Date().toUTCString(),
@@ -535,13 +535,13 @@ describe('📧 Email Provider Abstraction - Step by Step Tests', () => {
       const expectedPostmarkModel = {
         ...templateData,
         app_url: process.env.APP_URL || 'http://localhost:3000',
-        app_name: 'ArtistMgmt'
+        app_name: 'Bonnytone'
       }
 
       expect(expectedPostmarkModel).toHaveProperty('token', templateData.token)
       expect(expectedPostmarkModel).toHaveProperty('displayName', templateData.displayName)
       expect(expectedPostmarkModel).toHaveProperty('app_url')
-      expect(expectedPostmarkModel).toHaveProperty('app_name', 'ArtistMgmt')
+      expect(expectedPostmarkModel).toHaveProperty('app_name', 'Bonnytone')
 
       console.log('✅ Postmark template data mapping includes app context')
     })
