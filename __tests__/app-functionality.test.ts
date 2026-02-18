@@ -3,7 +3,7 @@
  * Tests each component and API endpoint step by step
  */
 
-describe('Artist Management Dashboard - Comprehensive Tests', () => {
+describe('Bonny Tone Radio - Comprehensive Tests', () => {
   // 1. Basic App Structure Tests
   describe('1. App Structure & Configuration', () => {
     test('package.json has correct dependencies', async () => {

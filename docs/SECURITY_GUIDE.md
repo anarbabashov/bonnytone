@@ -2,7 +2,7 @@
 
 ## Security Architecture Overview
 
-The Artist Management authentication system implements **defense-in-depth security** with multiple layers of protection:
+The Bonny Tone Radio authentication system implements **defense-in-depth security** with multiple layers of protection:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -291,7 +291,7 @@ import * as speakeasy from 'speakeasy';
 export function generateMFASecret(): { secret: string; qrCode: string } {
   const secret = speakeasy.generateSecret({
     name: `${APP_NAME}`,
-    issuer: 'ArtistMgmt',
+    issuer: 'Bonnytone',
     length: 32
   });
 

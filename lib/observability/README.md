@@ -162,7 +162,7 @@ console.log('Test alert triggered:', alert)
 ```yaml
 # prometheus.yml
 scrape_configs:
-  - job_name: 'artist-manager-auth'
+  - job_name: 'bonnytone-radio-auth'
     static_configs:
       - targets: ['localhost:3000']
     metrics_path: '/api/monitoring/metrics'

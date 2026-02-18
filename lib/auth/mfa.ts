@@ -100,7 +100,7 @@ export function verifyTOTPCode(secret: string, code: string): boolean {
 export function generateMFAQRCodeUrl(
   secret: string,
   userEmail: string,
-  issuer: string = 'ArtistMgmt'
+  issuer: string = 'Bonnytone'
 ): string {
   return authenticator.keyuri(userEmail, issuer, secret)
 }

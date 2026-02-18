@@ -6,7 +6,7 @@
 ```bash
 # Clone and install
 git clone <repo-url>
-cd artist-manager
+cd bonnytone-radio
 npm install
 
 # Set up environment
@@ -14,8 +14,8 @@ cp .env.example .env.local
 
 # Essential variables for auth development:
 DATABASE_URL="postgresql://localhost:5432/artistmgmt_dev"
-JWT_ISSUER="artistmgmt"
-JWT_AUDIENCE="artistmgmt.app"
+JWT_ISSUER="bonnytone"
+JWT_AUDIENCE="bonnytone.app"
 EMAIL_PROVIDER="dev"
 APP_URL="http://localhost:3000"
 ```
@@ -242,8 +242,8 @@ export async function POST(request: NextRequest) {
 {
   sub: "user_123",              // Subject (User ID)
   sid: "session_456",           // Session ID
-  iss: "artistmgmt",           // Issuer
-  aud: "artistmgmt.app",       // Audience
+  iss: "bonnytone",           // Issuer
+  aud: "bonnytone.app",       // Audience
   iat: 1640995200,             // Issued At
   exp: 1640995800,             // Expires At (10 minutes)
   type: "access",              // Token Type

@@ -206,7 +206,7 @@ export default function MailboxPage() {
                     <div>
                       <CardTitle>{selectedEmail.subject}</CardTitle>
                       <CardDescription>
-                        From: ArtistMgmt | To: {selectedEmail.recipient}
+                        From: Bonnytone | To: {selectedEmail.recipient}
                       </CardDescription>
                     </div>
                     <div className="flex gap-2">

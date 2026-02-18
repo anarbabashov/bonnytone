@@ -1,8 +1,8 @@
 import { SignJWT, jwtVerify, JWTPayload, importPKCS8, importSPKI } from 'jose'
 
 const JWT_ALGORITHM = process.env.JWT_ALGORITHM || 'HS512'
-const JWT_ISSUER = process.env.JWT_ISSUER || 'artistmgmt'
-const JWT_AUDIENCE = process.env.JWT_AUDIENCE || 'artistmgmt.app'
+const JWT_ISSUER = process.env.JWT_ISSUER || 'bonnytone'
+const JWT_AUDIENCE = process.env.JWT_AUDIENCE || 'bonnytone.app'
 const JWT_ACCESS_TTL = parseInt(process.env.JWT_ACCESS_TTL || '600') // 10 minutes
 const JWT_REFRESH_TTL = parseInt(process.env.JWT_REFRESH_TTL || '2592000') // 30 days
 

@@ -3,7 +3,7 @@ import path from 'path'
 import { Client as PostmarkClient } from 'postmark'
 
 const EMAIL_PROVIDER = process.env.EMAIL_PROVIDER || 'dev'
-const EMAIL_FROM = process.env.EMAIL_FROM || 'ArtistMgmt <no-reply@artistmgmt.org>'
+const EMAIL_FROM = process.env.EMAIL_FROM || 'Bonnytone <no-reply@bonnytone.org>'
 
 // Email template types
 export type TemplateId =
@@ -45,7 +45,7 @@ function generateEmailContent(templateId: TemplateId, data: Record<string, any>,
     case 'verify_email':
       const verifyUrl = `${appUrl}/auth/verify-email?token=${data.token}`
       return {
-        subject: 'Verify your email address - ArtistMgmt',
+        subject: 'Verify your email address - Bonnytone',
         html: `
           <!DOCTYPE html>
           <html>
@@ -57,7 +57,7 @@ function generateEmailContent(templateId: TemplateId, data: Record<string, any>,
           <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
             <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
               <h1 style="color: #2563eb;">Verify your email address</h1>
-              <p>Welcome to ArtistMgmt, ${data.displayName || 'there'}!</p>
+              <p>Welcome to Bonnytone, ${data.displayName || 'there'}!</p>
               <p>Please click the button below to verify your email address:</p>
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${verifyUrl}" 
@@ -80,7 +80,7 @@ function generateEmailContent(templateId: TemplateId, data: Record<string, any>,
         text: `
 Verify your email address
 
-Welcome to ArtistMgmt, ${data.displayName || 'there'}!
+Welcome to Bonnytone, ${data.displayName || 'there'}!
 
 Please visit the link below to verify your email address:
 ${verifyUrl}
@@ -93,7 +93,7 @@ This link will expire in 24 hours.
     case 'password_reset':
       const resetUrl = `${appUrl}/auth/reset-password?token=${data.token}`
       return {
-        subject: 'Reset your password - ArtistMgmt',
+        subject: 'Reset your password - Bonnytone',
         html: `
           <!DOCTYPE html>
           <html>
@@ -105,7 +105,7 @@ This link will expire in 24 hours.
           <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
             <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
               <h1 style="color: #dc2626;">Reset your password</h1>
-              <p>Someone requested a password reset for your ArtistMgmt account.</p>
+              <p>Someone requested a password reset for your Bonnytone account.</p>
               <p>Click the button below to reset your password:</p>
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${resetUrl}" 
@@ -128,7 +128,7 @@ This link will expire in 24 hours.
         text: `
 Reset your password
 
-Someone requested a password reset for your ArtistMgmt account.
+Someone requested a password reset for your Bonnytone account.
 
 Visit the link below to reset your password:
 ${resetUrl}
@@ -141,7 +141,7 @@ This link will expire in 30 minutes.
     case 'email_change_confirm':
       const confirmUrl = `${appUrl}/account/change-email/confirm?token=${data.token}`
       return {
-        subject: 'Confirm your new email address - ArtistMgmt',
+        subject: 'Confirm your new email address - Bonnytone',
         html: `
           <!DOCTYPE html>
           <html>
@@ -153,7 +153,7 @@ This link will expire in 30 minutes.
           <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
             <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
               <h1 style="color: #2563eb;">Confirm your new email address</h1>
-              <p>You requested to change your ArtistMgmt account email from <strong>${data.oldEmail}</strong> to <strong>${data.newEmail}</strong>.</p>
+              <p>You requested to change your Bonnytone account email from <strong>${data.oldEmail}</strong> to <strong>${data.newEmail}</strong>.</p>
               <p>Click the button below to confirm this change:</p>
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${confirmUrl}" 
@@ -172,7 +172,7 @@ This link will expire in 30 minutes.
         text: `
 Confirm your new email address
 
-You requested to change your ArtistMgmt account email from ${data.oldEmail} to ${data.newEmail}.
+You requested to change your Bonnytone account email from ${data.oldEmail} to ${data.newEmail}.
 
 Visit the link below to confirm this change:
 ${confirmUrl}
@@ -184,7 +184,7 @@ This link will expire in 24 hours.
 
     case 'email_changed_notification':
       return {
-        subject: 'Email address changed - ArtistMgmt',
+        subject: 'Email address changed - Bonnytone',
         html: `
           <!DOCTYPE html>
           <html>
@@ -196,7 +196,7 @@ This link will expire in 24 hours.
           <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
             <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
               <h1 style="color: #059669;">Email address changed</h1>
-              <p>Your ArtistMgmt account email address has been successfully changed from <strong>${data.oldEmail}</strong> to <strong>${data.newEmail}</strong>.</p>
+              <p>Your Bonnytone account email address has been successfully changed from <strong>${data.oldEmail}</strong> to <strong>${data.newEmail}</strong>.</p>
               <p style="color: #666; font-size: 14px;">
                 This change was made on ${new Date().toLocaleString()}.<br>
                 If you didn't make this change, please contact support immediately.
@@ -208,7 +208,7 @@ This link will expire in 24 hours.
         text: `
 Email address changed
 
-Your ArtistMgmt account email address has been successfully changed from ${data.oldEmail} to ${data.newEmail}.
+Your Bonnytone account email address has been successfully changed from ${data.oldEmail} to ${data.newEmail}.
 
 This change was made on ${new Date().toLocaleString()}.
 If you didn't make this change, please contact support immediately.
@@ -217,7 +217,7 @@ If you didn't make this change, please contact support immediately.
 
     case 'login_alert':
       return {
-        subject: 'New login to your account - ArtistMgmt',
+        subject: 'New login to your account - Bonnytone',
         html: `
           <!DOCTYPE html>
           <html>
@@ -229,7 +229,7 @@ If you didn't make this change, please contact support immediately.
           <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
             <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
               <h1 style="color: #ea580c;">New login detected</h1>
-              <p>Someone signed in to your ArtistMgmt account.</p>
+              <p>Someone signed in to your Bonnytone account.</p>
               <div style="background-color: #f9fafb; padding: 15px; border-radius: 6px; margin: 20px 0;">
                 <p style="margin: 5px 0;"><strong>Time:</strong> ${new Date().toLocaleString()}</p>
                 <p style="margin: 5px 0;"><strong>IP Address:</strong> ${data.ip || 'Unknown'}</p>
@@ -246,7 +246,7 @@ If you didn't make this change, please contact support immediately.
         text: `
 New login detected
 
-Someone signed in to your ArtistMgmt account.
+Someone signed in to your Bonnytone account.
 
 Details:
 - Time: ${new Date().toLocaleString()}
@@ -281,7 +281,7 @@ export async function sendEmail(tpl: TemplateId, to: string, data: Record<string
           TemplateModel: {
             ...data,
             app_url: baseUrl,
-            app_name: 'ArtistMgmt',
+            app_name: 'Bonnytone',
           },
         })
         return true
