@@ -32,13 +32,20 @@ curl -X POST localhost:3000/api/auth/register \
 
 ## Architecture Summary
 
-The authentication system provides secure user accounts for the Bonny Tone Radio platform. Registered users get access to personalized features like mix/DJ reminders and track favoriting.
+The Bonny Tone Radio platform consists of a radio player homepage and a full authentication system. Registered users get access to personalized features like mix/DJ reminders and track favoriting.
 
 ```
+Homepage (Radio Player)
+├── Canvas Waveform Visualizer (theme-aware)
+├── Glass-morphism Play/Pause Button
+├── Action Buttons (Mute, Share, More)
+├── Volume Slider with gradient fill
+└── Top Bar (Branding, Theme Toggle, Auth)
+
 Frontend (Next.js + React)
 ├── Authentication Pages (/auth/*)
 ├── Protected Routes with Guards
-└── Real-time Form Validation
+└── Light/Dark Theme (next-themes)
 
 Backend (Next.js API Routes)
 ├── JWT Access Tokens (10min)
