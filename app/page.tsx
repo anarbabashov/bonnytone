@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useRef } from "react"
 import { useTheme } from "next-themes"
+import { usePlayerStore } from "@/store/playerStore"
+import { useRadioPlayer } from "@/hooks/useRadioPlayer"
 import Waveform from "@/components/radio/Waveform"
 import GlassPlayButton from "@/components/radio/GlassPlayButton"
 import ActionButtons from "@/components/radio/ActionButtons"
@@ -11,30 +12,41 @@ import ThemeToggle from "@/components/layout/ThemeToggle/ThemeToggle"
 
 export default function Home() {
   const { resolvedTheme } = useTheme()
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [volume, setVolume] = useState(0.7)
-  const [isMuted, setIsMuted] = useState(false)
-  const prevVolumeRef = useRef(0.7)
+  const { analyserNode } = useRadioPlayer()
 
-  const handleToggleMute = () => {
-    if (isMuted) {
-      setVolume(prevVolumeRef.current)
-      setIsMuted(false)
-    } else {
-      prevVolumeRef.current = volume
-      setVolume(0)
-      setIsMuted(true)
+  const isPlaying = usePlayerStore((s) => s.isPlaying)
+  const volume = usePlayerStore((s) => s.volume)
+  const isMuted = usePlayerStore((s) => s.isMuted)
+  const togglePlay = usePlayerStore((s) => s.togglePlay)
+  const setVolume = usePlayerStore((s) => s.setVolume)
+  const toggleMute = usePlayerStore((s) => s.toggleMute)
+
+  const handleShare = async () => {
+    const shareData = {
+      title: 'Bonny Tone Radio',
+      text: 'Listen to Bonny Tone Radio',
+      url: window.location.origin,
     }
-  }
 
-  const handleVolumeChange = (v: number) => {
-    setVolume(v)
-    setIsMuted(v === 0)
+    try {
+      if (navigator.canShare?.(shareData)) {
+        await navigator.share(shareData)
+      } else {
+        await navigator.clipboard.writeText(window.location.origin)
+      }
+    } catch {
+      // User cancelled share or clipboard failed -- ignore
+    }
   }
 
   return (
     <div className="relative h-screen overflow-hidden flex flex-col items-center justify-center px-4">
-      <Waveform isPlaying={isPlaying} volume={isMuted ? 0 : volume} theme={resolvedTheme} />
+      <Waveform
+        isPlaying={isPlaying}
+        volume={isMuted ? 0 : volume}
+        theme={resolvedTheme}
+        analyserNode={analyserNode}
+      />
 
       {/* Top bar: Auth + Theme toggle */}
       <div className="fixed top-0 left-0 right-0 z-10 flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
@@ -49,16 +61,16 @@ export default function Home() {
       <div className="flex flex-col items-center gap-8 sm:gap-10 mt-40 sm:mt-40">
         <GlassPlayButton
           isPlaying={isPlaying}
-          onToggle={() => setIsPlaying((p) => !p)}
+          onToggle={togglePlay}
           theme={resolvedTheme}
         />
         <ActionButtons
           isMuted={isMuted}
-          onToggleMute={handleToggleMute}
-          onShare={() => {}}
+          onToggleMute={toggleMute}
+          onShare={handleShare}
           onMore={() => {}}
         />
-        <VolumeSlider volume={volume} onChange={handleVolumeChange} />
+        <VolumeSlider volume={volume} onChange={setVolume} />
       </div>
     </div>
   )
