@@ -5,6 +5,7 @@ import { usePlayerStore } from "@/store/playerStore"
 import { useRadioPlayer } from "@/hooks/useRadioPlayer"
 import Waveform from "@/components/radio/Waveform"
 import GlassPlayButton from "@/components/radio/GlassPlayButton"
+import StreamStatus from "@/components/radio/StreamStatus"
 import ActionButtons from "@/components/radio/ActionButtons"
 import VolumeSlider from "@/components/radio/VolumeSlider"
 import AuthButtons from "@/components/layout/AuthButtons"
@@ -15,8 +16,10 @@ export default function Home() {
   const { analyserNode } = useRadioPlayer()
 
   const isPlaying = usePlayerStore((s) => s.isPlaying)
+  const isBuffering = usePlayerStore((s) => s.isBuffering)
   const volume = usePlayerStore((s) => s.volume)
   const isMuted = usePlayerStore((s) => s.isMuted)
+  const streamStatus = usePlayerStore((s) => s.streamStatus)
   const togglePlay = usePlayerStore((s) => s.togglePlay)
   const setVolume = usePlayerStore((s) => s.setVolume)
   const toggleMute = usePlayerStore((s) => s.toggleMute)
@@ -61,9 +64,11 @@ export default function Home() {
       <div className="flex flex-col items-center gap-8 sm:gap-10 mt-40 sm:mt-40">
         <GlassPlayButton
           isPlaying={isPlaying}
+          isBuffering={isBuffering}
           onToggle={togglePlay}
           theme={resolvedTheme}
         />
+        <StreamStatus status={streamStatus} />
         <ActionButtons
           isMuted={isMuted}
           onToggleMute={toggleMute}

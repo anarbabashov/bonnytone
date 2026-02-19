@@ -21,31 +21,31 @@
 
 | # | Task | Status | Commit |
 |---|---|---|---|
-| 1.1 | Deploy AzuraCast or Liquidsoap + Nginx | Pending | -- |
-| 1.2 | Configure 3 bitrate tiers (48/128/256 kbps AAC-LC) | Pending | -- |
-| 1.3 | Auto-DJ playlists with crossfade | Pending | -- |
-| 1.4 | CORS headers on Nginx | Pending | -- |
-| 1.5 | Verify HLS playback in browser | Pending | -- |
+| 1.1 | Deploy AzuraCast or Liquidsoap + Nginx | Done | local Docker |
+| 1.2 | Configure 3 bitrate tiers (48/128/256 kbps AAC-LC) | Deferred | -- |
+| 1.3 | Auto-DJ playlists with crossfade | Done | AzuraCast default |
+| 1.4 | CORS headers on Nginx | Done | AzuraCast default |
+| 1.5 | Verify HLS playback in browser | Done | ff45a79 |
 
 ## Phase 2: Audio Engine
 
 | # | Task | Status | Commit |
 |---|---|---|---|
-| 2.1 | Install hls.js | Pending | -- |
-| 2.2 | Create `useRadioPlayer` hook | Pending | -- |
-| 2.3 | Create PlayerStore (Zustand) | Pending | -- |
-| 2.4 | Wire GlassPlayButton to real audio | Pending | -- |
-| 2.5 | Wire VolumeSlider to real audio | Pending | -- |
-| 2.6 | Wire mute button to real audio | Pending | -- |
-| 2.7 | HLS.js error recovery | Pending | -- |
-| 2.8 | ABR quality switching | Pending | -- |
+| 2.1 | Install hls.js | Done | ff45a79 |
+| 2.2 | Create `useRadioPlayer` hook | Done | ff45a79 |
+| 2.3 | Create PlayerStore (Zustand) | Done | ff45a79 |
+| 2.4 | Wire GlassPlayButton to real audio | Done | ff45a79 |
+| 2.5 | Wire VolumeSlider to real audio | Done | ff45a79 |
+| 2.6 | Wire mute button to real audio | Done | ff45a79 |
+| 2.7 | HLS.js error recovery | Done | ff45a79 |
+| 2.8 | ABR quality switching | Done | ff45a79 |
 
 ## Phase 3: Mobile & Cross-Device
 
 | # | Task | Status | Commit |
 |---|---|---|---|
-| 3.1 | navigator.mediaSession integration | Pending | -- |
-| 3.2 | AudioContext resume on user gesture | Pending | -- |
+| 3.1 | navigator.mediaSession integration | Done | ff45a79 |
+| 3.2 | AudioContext resume on user gesture | Done | ff45a79 |
 | 3.3 | iOS Safari testing | Pending | -- |
 | 3.4 | Android Chrome testing | Pending | -- |
 | 3.5 | Desktop browsers testing | Pending | -- |
@@ -59,8 +59,8 @@
 |---|---|---|---|
 | 4.1 | Stream status indicator (LIVE/Connecting/Offline) | Pending | -- |
 | 4.2 | Buffering state in play button | Pending | -- |
-| 4.3 | Upgrade Waveform.tsx to AnalyserNode | Pending | -- |
-| 4.4 | Share button (Web Share API + clipboard) | Pending | -- |
+| 4.3 | Upgrade Waveform.tsx to AnalyserNode | Done | ff45a79 |
+| 4.4 | Share button (Web Share API + clipboard) | Done | ff45a79 |
 | 4.5 | Listener count display | Pending | -- |
 | 4.6 | Quality indicator | Pending | -- |
 | 4.7 | Now-playing display (title/artist) | Pending | -- |
@@ -85,4 +85,4 @@
 
 | Date | Commit | Scope | Notes |
 |---|---|---|---|
-| -- | -- | -- | -- |
+| 2026-02-18 | ff45a79 | Phase 2 (Audio Engine) | hls.js, useRadioPlayer hook, PlayerStore (Zustand), Waveform AnalyserNode, mediaSession, share button, 21 unit tests |
