@@ -1,14 +1,16 @@
 'use client'
 
-import { Play, Pause } from "lucide-react"
+import { Play, Pause, Loader2 } from "lucide-react"
 
 interface GlassPlayButtonProps {
   isPlaying: boolean
+  isBuffering: boolean
+  disabled?: boolean
   onToggle: () => void
   theme?: string
 }
 
-export default function GlassPlayButton({ isPlaying, onToggle, theme }: GlassPlayButtonProps) {
+export default function GlassPlayButton({ isPlaying, isBuffering, disabled, onToggle, theme }: GlassPlayButtonProps) {
   const isDark = theme !== "light"
 
   const glassStyle = isDark
@@ -20,7 +22,7 @@ export default function GlassPlayButton({ isPlaying, onToggle, theme }: GlassPla
         boxShadow: isPlaying
           ? "0 0 30px hsla(180, 60%, 50%, 0.2), 0 0 80px hsla(180, 60%, 50%, 0.08)"
           : "0 8px 32px hsla(220, 20%, 6%, 0.3)",
-        animation: isPlaying ? "pulse-glow 3s ease-in-out infinite" : "none",
+        animation: isPlaying && !isBuffering ? "pulse-glow 3s ease-in-out infinite" : "none",
       }
     : {
         background: "hsla(220, 10%, 92%, 0.35)",
@@ -30,26 +32,37 @@ export default function GlassPlayButton({ isPlaying, onToggle, theme }: GlassPla
         boxShadow: isPlaying
           ? "0 0 30px hsla(180, 60%, 40%, 0.15), 0 0 80px hsla(180, 60%, 40%, 0.06)"
           : "0 8px 32px hsla(220, 10%, 50%, 0.15)",
-        animation: isPlaying ? "pulse-glow 3s ease-in-out infinite" : "none",
+        animation: isPlaying && !isBuffering ? "pulse-glow 3s ease-in-out infinite" : "none",
       }
+
+  const icon = isBuffering ? (
+    <Loader2
+      className="w-16 h-16 sm:w-20 sm:h-20 text-foreground animate-spin"
+      strokeWidth={1}
+    />
+  ) : isPlaying ? (
+    <Pause
+      className="w-16 h-16 sm:w-20 sm:h-20 text-foreground transition-transform duration-200 group-hover:scale-110"
+      strokeWidth={1}
+    />
+  ) : (
+    <Play
+      className="w-16 h-16 sm:w-20 sm:h-20 text-foreground fill-foreground ml-2 transition-transform duration-200 group-hover:scale-110"
+    />
+  )
+
+  const label = isBuffering ? "Buffering" : isPlaying ? "Pause" : "Play"
 
   return (
     <button
       onClick={onToggle}
-      className="group relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      disabled={disabled}
+      className={`group relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 rounded-full flex items-center justify-center transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95 cursor-pointer'}`}
       style={glassStyle}
-      aria-label={isPlaying ? "Pause" : "Play"}
+      aria-label={label}
+      suppressHydrationWarning
     >
-      {isPlaying ? (
-        <Pause
-          className="w-16 h-16 sm:w-20 sm:h-20 text-foreground transition-transform duration-200 group-hover:scale-110"
-          strokeWidth={1}
-        />
-      ) : (
-        <Play
-          className="w-16 h-16 sm:w-20 sm:h-20 text-foreground fill-foreground ml-2 transition-transform duration-200 group-hover:scale-110"
-        />
-      )}
+      {icon}
     </button>
   )
 }

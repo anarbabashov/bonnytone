@@ -6,12 +6,22 @@ interface WaveformProps {
   isPlaying: boolean
   volume: number
   theme?: string
+  analyserNode?: AnalyserNode | null
 }
 
-export default function Waveform({ isPlaying, volume, theme }: WaveformProps) {
+export default function Waveform({ isPlaying, volume, theme, analyserNode }: WaveformProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const timeRef = useRef(0)
   const animRef = useRef<number>()
+  const frequencyDataRef = useRef<Uint8Array | null>(null)
+
+  useEffect(() => {
+    if (analyserNode) {
+      frequencyDataRef.current = new Uint8Array(analyserNode.frequencyBinCount)
+    } else {
+      frequencyDataRef.current = null
+    }
+  }, [analyserNode])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -33,7 +43,17 @@ export default function Waveform({ isPlaying, volume, theme }: WaveformProps) {
       const rows = Math.ceil(canvas.height / gridSize)
       const cols = Math.ceil(canvas.width / gridSize)
       const t = timeRef.current
-      const intensity = isPlaying ? 0.3 + volume * 0.7 : 0.15
+      const baseIntensity = isPlaying ? 0.3 + volume * 0.7 : 0.15
+
+      // Get real frequency data if analyser is available and playing
+      let hasRealData = false
+      const freqData = frequencyDataRef.current
+      if (analyserNode && freqData && isPlaying) {
+        analyserNode.getByteFrequencyData(freqData)
+        // Check if we're getting real data (Safari may return all zeros)
+        const sum = freqData[0] + freqData[1] + freqData[2] + freqData[3]
+        hasRealData = sum > 0
+      }
 
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
@@ -47,7 +67,20 @@ export default function Waveform({ isPlaying, volume, theme }: WaveformProps) {
           )
           const norm = dist / maxDist
 
-          const waveOffset = Math.sin(norm * 10 - t) * 0.5 + 0.5
+          let intensity = baseIntensity
+          let waveOffset: number
+
+          if (hasRealData && freqData) {
+            // Map grid position to frequency bin
+            const binIndex = Math.floor(norm * (freqData.length - 1))
+            const freqValue = freqData[binIndex] / 255
+            waveOffset = freqValue
+            intensity = baseIntensity * (0.5 + freqValue * 0.5)
+          } else {
+            // Fallback: mathematical animation
+            waveOffset = Math.sin(norm * 10 - t) * 0.5 + 0.5
+          }
+
           const size = gridSize * waveOffset * 0.8 * intensity * 2
 
           ctx.beginPath()
@@ -94,7 +127,7 @@ export default function Waveform({ isPlaying, volume, theme }: WaveformProps) {
       if (animRef.current) cancelAnimationFrame(animRef.current)
       window.removeEventListener("resize", resize)
     }
-  }, [isPlaying, volume, theme])
+  }, [isPlaying, volume, theme, analyserNode])
 
   return (
     <canvas

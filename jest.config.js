@@ -8,14 +8,19 @@ const createJestConfig = nextJest({
 // Add any custom config to be passed to Jest
 const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  resolver: '<rootDir>/tests/jest-resolver.js',
   moduleNameMapper: {
     // Handle module aliases (this will match tsconfig.json paths)
     '^@/(.*)$': '<rootDir>/$1',
+    // Mock Next.js internal module used by 'use client' directive
+    '^private-next-rsc-mod-ref-proxy$': '<rootDir>/tests/__mocks__/private-next-rsc-mod-ref-proxy.js',
+    // Mock lucide-react barrel import (for direct imports, not modularize-import paths)
+    '^lucide-react$': '<rootDir>/tests/__mocks__/lucide-react.tsx',
   },
   transformIgnorePatterns: [
     'node_modules/(?!(jose|@next|next)/)',
   ],
-  testEnvironment: 'jest-environment-node',
+  testEnvironment: 'jest-environment-jsdom',
   testMatch: [
     '**/__tests__/**/*.(js|jsx|ts|tsx)',
     '**/*.(test|spec).(js|jsx|ts|tsx)',
