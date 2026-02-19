@@ -267,7 +267,7 @@ export function useRadioPlayer(): RadioPlayerRefs {
     if (!('mediaSession' in navigator)) return
 
     navigator.mediaSession.metadata = new MediaMetadata({
-      title: 'Bonny Tone Radio',
+      title: 'BTRadio',
       artist: 'Live Stream',
       artwork: [
         { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },

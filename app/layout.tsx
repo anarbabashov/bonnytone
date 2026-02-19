@@ -7,8 +7,8 @@ import ThemeProvider from "@/components/layout/ThemeProvider/ThemeProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Bonny Tone",
-  description: "Bonny Tone Radio - Online radio platform",
+  title: "BTRadio",
+  description: "BTRadio - Online radio platform",
 };
 
 export default function RootLayout({

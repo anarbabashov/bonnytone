@@ -9,6 +9,7 @@ const POLL_INTERVAL = 15_000 // 15 seconds
 
 export function useNowPlaying(): NowPlayingInfo | null {
   const setListenerCount = usePlayerStore((s) => s.setListenerCount)
+  const setStreamStatus = usePlayerStore((s) => s.setStreamStatus)
   const nowPlaying = usePlayerStore((s) => s.nowPlaying)
   const setNowPlaying = usePlayerStore((s) => s.setNowPlaying)
 
@@ -17,7 +18,10 @@ export function useNowPlaying(): NowPlayingInfo | null {
 
     try {
       const res = await fetch(API_URL)
-      if (!res.ok) return
+      if (!res.ok) {
+        setStreamStatus('offline')
+        return
+      }
 
       const data = await res.json()
 
@@ -30,10 +34,17 @@ export function useNowPlaying(): NowPlayingInfo | null {
         artist: song?.artist || 'Unknown Artist',
         art: song?.art || null,
       })
+
+      // Update stream status based on whether the station is broadcasting.
+      // Don't override 'connecting' state (user just pressed play, HLS loading).
+      const current = usePlayerStore.getState().streamStatus
+      if (current !== 'connecting') {
+        setStreamStatus(song ? 'live' : 'offline')
+      }
     } catch {
-      // Silently fail -- keep last known data
+      setStreamStatus('offline')
     }
-  }, [setListenerCount, setNowPlaying])
+  }, [setListenerCount, setNowPlaying, setStreamStatus])
 
   useEffect(() => {
     fetchNowPlaying()

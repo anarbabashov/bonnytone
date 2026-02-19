@@ -5,11 +5,12 @@ import { Play, Pause, Loader2 } from "lucide-react"
 interface GlassPlayButtonProps {
   isPlaying: boolean
   isBuffering: boolean
+  disabled?: boolean
   onToggle: () => void
   theme?: string
 }
 
-export default function GlassPlayButton({ isPlaying, isBuffering, onToggle, theme }: GlassPlayButtonProps) {
+export default function GlassPlayButton({ isPlaying, isBuffering, disabled, onToggle, theme }: GlassPlayButtonProps) {
   const isDark = theme !== "light"
 
   const glassStyle = isDark
@@ -55,9 +56,11 @@ export default function GlassPlayButton({ isPlaying, isBuffering, onToggle, them
   return (
     <button
       onClick={onToggle}
-      className="group relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      disabled={disabled}
+      className={`group relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 rounded-full flex items-center justify-center transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95 cursor-pointer'}`}
       style={glassStyle}
       aria-label={label}
+      suppressHydrationWarning
     >
       {icon}
     </button>
