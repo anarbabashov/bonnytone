@@ -57,8 +57,8 @@
 
 | # | Task | Status | Commit |
 |---|---|---|---|
-| 4.1 | Stream status indicator (LIVE/Connecting/Offline) | Pending | -- |
-| 4.2 | Buffering state in play button | Pending | -- |
+| 4.1 | Stream status indicator (LIVE/Connecting/Offline) | Done | 6c2c71f |
+| 4.2 | Buffering state in play button | Done | 6c2c71f |
 | 4.3 | Upgrade Waveform.tsx to AnalyserNode | Done | ff45a79 |
 | 4.4 | Share button (Web Share API + clipboard) | Done | ff45a79 |
 | 4.5 | Listener count display | Pending | -- |
@@ -86,3 +86,4 @@
 | Date | Commit | Scope | Notes |
 |---|---|---|---|
 | 2026-02-18 | ff45a79 | Phase 2 (Audio Engine) | hls.js, useRadioPlayer hook, PlayerStore (Zustand), Waveform AnalyserNode, mediaSession, share button, 21 unit tests |
+| 2026-02-19 | 6c2c71f | Phase 4 (UI Polish) | StreamStatus component, GlassPlayButton buffering spinner, jest jsdom + lucide-react resolver, 16 component tests |

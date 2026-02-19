@@ -3,6 +3,12 @@ import { create } from 'zustand'
 export type Quality = 'auto' | 'low' | 'medium' | 'high'
 export type StreamStatus = 'idle' | 'connecting' | 'live' | 'offline' | 'error'
 
+export interface NowPlayingInfo {
+  title: string
+  artist: string
+  art: string | null
+}
+
 export interface PlayerState {
   // Playback
   isPlaying: boolean
@@ -15,6 +21,7 @@ export interface PlayerState {
   // Stream
   streamStatus: StreamStatus
   listenerCount: number | null
+  nowPlaying: NowPlayingInfo | null
 
   // Error
   errorCount: number
@@ -31,6 +38,7 @@ export interface PlayerState {
   setIsBuffering: (isBuffering: boolean) => void
   setStreamStatus: (status: StreamStatus) => void
   setListenerCount: (count: number | null) => void
+  setNowPlaying: (info: NowPlayingInfo | null) => void
   setError: (error: string | null) => void
   incrementErrorCount: () => void
   resetErrorCount: () => void
@@ -46,6 +54,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   quality: 'auto',
   streamStatus: 'idle',
   listenerCount: null,
+  nowPlaying: null,
   errorCount: 0,
   lastError: null,
 
@@ -82,6 +91,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   setIsBuffering: (isBuffering: boolean) => set({ isBuffering }),
   setStreamStatus: (streamStatus: StreamStatus) => set({ streamStatus }),
   setListenerCount: (listenerCount: number | null) => set({ listenerCount }),
+  setNowPlaying: (nowPlaying: NowPlayingInfo | null) => set({ nowPlaying }),
   setError: (lastError: string | null) => set({ lastError }),
   incrementErrorCount: () => set((s) => ({ errorCount: s.errorCount + 1 })),
   resetErrorCount: () => set({ errorCount: 0, lastError: null }),

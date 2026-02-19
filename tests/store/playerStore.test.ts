@@ -12,6 +12,7 @@ function resetStore() {
     quality: 'auto',
     streamStatus: 'idle',
     listenerCount: null,
+    nowPlaying: null,
     errorCount: 0,
     lastError: null,
   })
@@ -177,6 +178,34 @@ describe('PlayerStore', () => {
       usePlayerStore.getState().resetErrorCount()
       expect(usePlayerStore.getState().errorCount).toBe(0)
       expect(usePlayerStore.getState().lastError).toBeNull()
+    })
+  })
+
+  describe('nowPlaying', () => {
+    it('should have null as default', () => {
+      expect(usePlayerStore.getState().nowPlaying).toBeNull()
+    })
+
+    it('setNowPlaying() should update now playing info', () => {
+      usePlayerStore.getState().setNowPlaying({
+        title: 'Infinity',
+        artist: 'Andy Gart',
+        art: 'http://example.com/art.jpg',
+      })
+      const np = usePlayerStore.getState().nowPlaying
+      expect(np?.title).toBe('Infinity')
+      expect(np?.artist).toBe('Andy Gart')
+      expect(np?.art).toBe('http://example.com/art.jpg')
+    })
+
+    it('setNowPlaying(null) should clear now playing', () => {
+      usePlayerStore.getState().setNowPlaying({
+        title: 'Test',
+        artist: 'Test',
+        art: null,
+      })
+      usePlayerStore.getState().setNowPlaying(null)
+      expect(usePlayerStore.getState().nowPlaying).toBeNull()
     })
   })
 

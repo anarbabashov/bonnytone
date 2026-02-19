@@ -3,9 +3,11 @@
 import { useTheme } from "next-themes"
 import { usePlayerStore } from "@/store/playerStore"
 import { useRadioPlayer } from "@/hooks/useRadioPlayer"
+import { useNowPlaying } from "@/hooks/useNowPlaying"
 import Waveform from "@/components/radio/Waveform"
 import GlassPlayButton from "@/components/radio/GlassPlayButton"
 import StreamStatus from "@/components/radio/StreamStatus"
+import NowPlayingBar from "@/components/radio/NowPlayingBar"
 import ActionButtons from "@/components/radio/ActionButtons"
 import VolumeSlider from "@/components/radio/VolumeSlider"
 import AuthButtons from "@/components/layout/AuthButtons"
@@ -14,12 +16,14 @@ import ThemeToggle from "@/components/layout/ThemeToggle/ThemeToggle"
 export default function Home() {
   const { resolvedTheme } = useTheme()
   const { analyserNode } = useRadioPlayer()
+  const nowPlaying = useNowPlaying()
 
   const isPlaying = usePlayerStore((s) => s.isPlaying)
   const isBuffering = usePlayerStore((s) => s.isBuffering)
   const volume = usePlayerStore((s) => s.volume)
   const isMuted = usePlayerStore((s) => s.isMuted)
   const streamStatus = usePlayerStore((s) => s.streamStatus)
+  const listenerCount = usePlayerStore((s) => s.listenerCount)
   const togglePlay = usePlayerStore((s) => s.togglePlay)
   const setVolume = usePlayerStore((s) => s.setVolume)
   const toggleMute = usePlayerStore((s) => s.toggleMute)
@@ -69,6 +73,7 @@ export default function Home() {
           theme={resolvedTheme}
         />
         <StreamStatus status={streamStatus} />
+        <NowPlayingBar nowPlaying={nowPlaying} listenerCount={listenerCount} />
         <ActionButtons
           isMuted={isMuted}
           onToggleMute={toggleMute}
