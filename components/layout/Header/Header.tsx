@@ -20,7 +20,6 @@ export default function Header() {
             />
           </svg>
           <span className="text-lg font-semibold">BTRadio</span>
-          test
         </div>
         <ThemeToggle />
       </nav>
