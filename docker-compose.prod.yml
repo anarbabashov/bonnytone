@@ -25,8 +25,12 @@ services:
       - "127.0.0.1:8080:80"
       - "8000:8000"
       - "8010:8010"
+    environment:
+      - MARIADB_AUTO_UPGRADE=1
+      - MARIADB_RANDOM_ROOT_PASSWORD=yes
     volumes:
       - azuracast_data:/var/azuracast
+      - azuracast_db:/var/lib/mysql
     networks:
       - btradio
 
@@ -58,6 +62,7 @@ services:
 
 volumes:
   azuracast_data:
+  azuracast_db:
   certbot_certs:
   certbot_webroot:
 
