@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
 
     if (otherSessions.length > 0) {
       await Promise.all(
-        otherSessions.map(session => 
+        otherSessions.map((session: { id: string }) =>
           prisma.session.update({
             where: { id: session.id },
             data: { revokedAt: new Date() },
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
       // Also revoke refresh tokens for those sessions
       await prisma.refreshToken.updateMany({
         where: {
-          sessionId: { in: otherSessions.map(s => s.id) },
+          sessionId: { in: otherSessions.map((s: { id: string }) => s.id) },
           revokedAt: null,
         },
         data: { revokedAt: new Date() },
