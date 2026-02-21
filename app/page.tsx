@@ -9,7 +9,6 @@ import Waveform from "@/components/radio/Waveform"
 import GlassPlayButton from "@/components/radio/GlassPlayButton"
 import ActionButtons from "@/components/radio/ActionButtons"
 import VolumeSlider from "@/components/radio/VolumeSlider"
-import AuthButtons from "@/components/layout/AuthButtons"
 import ThemeToggle from "@/components/layout/ThemeToggle/ThemeToggle"
 
 export default function Home() {
@@ -109,10 +108,7 @@ export default function Home() {
           </svg>
           <span className="text-lg font-semibold text-foreground">BTRadio</span>
         </div>
-        <div className="flex items-center gap-3">
-          <ThemeToggle />
-          <AuthButtons />
-        </div>
+        <ThemeToggle />
       </div>
 
       {/* Player controls */}

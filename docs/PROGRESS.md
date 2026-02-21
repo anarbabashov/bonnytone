@@ -1,6 +1,6 @@
 # BTRadio v1.0.0 -- Development Progress
 
-**Branch:** `feature/music-player`
+**Branch:** `feature/music-player`, `feature/production-hardening`
 **Started:** 2026-02-18
 
 ---
@@ -69,19 +69,36 @@
 | 4.10 | Next.js HLS rewrite proxy (CORS fix) | Done | c603c2f |
 | 4.11 | useNowPlaying sets stream status on page load | Done | c603c2f |
 
-## Phase 5: Production Hardening
+## Phase 5: Production Deployment
 
 | # | Task | Status | Commit |
 |---|---|---|---|
-| 5.1 | /api/stream/config endpoint | Pending | -- |
-| 5.2 | /api/stream/status endpoint | Pending | -- |
-| 5.3 | CDN setup | Pending | -- |
-| 5.4 | PWA manifest + Service Worker | Pending | -- |
-| 5.5 | Stream health monitoring | Pending | -- |
-| 5.6 | Error tracking (Sentry) | Pending | -- |
-| 5.7 | Performance audit (Lighthouse) | Pending | -- |
-| 5.8 | Deployment config | Pending | -- |
-| 5.9 | Smoke test suite (Playwright) | Pending | -- |
+| 5.1 | Dockerfile (multi-stage standalone build) | Done | pending |
+| 5.2 | docker-compose.prod.yml (Next.js + AzuraCast + Nginx + Certbot) | Done | pending |
+| 5.3 | Nginx config (SSL, HLS proxy, caching, security headers) | Done | pending |
+| 5.4 | next.config.js standalone output + merge mjs | Done | pending |
+| 5.5 | Hide auth UI for initial launch | Done | pending |
+| 5.6 | .env.production.example template | Done | pending |
+| 5.7 | Provision VPS (OVHcloud VPS-1, 4vCPU/8GB) | Done | -- |
+| 5.8 | VPS setup: Docker, clone repo, env config | Pending | -- |
+| 5.9 | DNS: point domain A records to VPS | Pending | -- |
+| 5.10 | SSL: Let's Encrypt cert via Certbot | Pending | -- |
+| 5.11 | Deploy: docker compose up | Pending | -- |
+| 5.12 | AzuraCast: create station, enable HLS, upload music | Pending | -- |
+| 5.13 | Verify: stream plays, tab status works, share works | Pending | -- |
+
+## Phase 6: Post-Launch (Future)
+
+| # | Task | Status | Commit |
+|---|---|---|---|
+| 6.1 | PWA manifest + Service Worker | Pending | -- |
+| 6.2 | Error tracking (Sentry) | Pending | -- |
+| 6.3 | Performance audit (Lighthouse) | Pending | -- |
+| 6.4 | CDN for static assets | Pending | -- |
+| 6.5 | Stream health monitoring | Pending | -- |
+| 6.6 | Smoke test suite (Playwright) | Pending | -- |
+| 6.7 | Re-enable auth + user accounts | Pending | -- |
+| 6.8 | Phase 3 cross-device testing | Pending | -- |
 
 ---
 
@@ -93,3 +110,4 @@
 | 2026-02-19 | 6c2c71f | Phase 4 (UI Polish) | StreamStatus component, GlassPlayButton buffering spinner, jest jsdom + lucide-react resolver, 16 component tests |
 | 2026-02-19 | 30c95c4 | Phase 4 (UI Polish) | NowPlayingBar, useNowPlaying hook (AzuraCast API polling), listener count, store nowPlaying state, 9 new tests |
 | 2026-02-19 | c603c2f | Phase 4 (UI Polish) | Rebrand to BTRadio, dynamic tab title + colored favicon, logo icon, CORS proxy, stream status on page load, disable play when offline, hydration fix |
+| 2026-02-20 | pending | Phase 5 (Deployment) | Dockerfile, docker-compose.prod.yml, Nginx config, standalone build, hide auth, .env template |

@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: btradio-app
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_STREAM_URL=/stream/hls/bonnytone/live.m3u8
+      - NEXT_PUBLIC_AZURACAST_API_URL=/api/azuracast/nowplaying/bonnytone
+      - AZURACAST_ORIGIN=http://azuracast:80
+    networks:
+      - btradio
+
+  azuracast:
+    image: ghcr.io/azuracast/azuracast:latest
+    container_name: btradio-azuracast
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:80"
+      - "8000:8000"
+      - "8010:8010"
+    volumes:
+      - azuracast_data:/var/azuracast
+    networks:
+      - btradio
+
+  nginx:
+    image: nginx:alpine
+    container_name: btradio-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - certbot_certs:/etc/letsencrypt:ro
+      - certbot_webroot:/var/www/certbot:ro
+    depends_on:
+      - nextjs
+      - azuracast
+    networks:
+      - btradio
+
+  certbot:
+    image: certbot/certbot
+    container_name: btradio-certbot
+    volumes:
+      - certbot_certs:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done'"
+
+volumes:
+  azuracast_data:
+  certbot_certs:
+  certbot_webroot:
+
+networks:
+  btradio:
+    driver: bridge
