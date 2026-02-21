@@ -294,7 +294,7 @@ class ObservabilityService {
 
       // Process alerts
       const alertsMap = new Map<string, { count: number; lastOccurred: Date }>()
-      alertData.forEach(alert => {
+      alertData.forEach((alert: { meta: unknown; createdAt: Date }) => {
         const alertType = (alert.meta as any)?.alertType as string
         if (alertType) {
           const existing = alertsMap.get(alertType)
@@ -312,7 +312,7 @@ class ObservabilityService {
       const ipData: any[] = []
 
       return {
-        events: events.map(e => ({
+        events: events.map((e: { action: string; _count: { action: number } }) => ({
           eventType: e.action,
           count: e._count.action,
         })),

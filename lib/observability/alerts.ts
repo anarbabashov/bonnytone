@@ -459,7 +459,7 @@ class AlertingService {
       orderBy: { createdAt: 'desc' },
     })
 
-    return alerts.map(log => ({
+    return alerts.map((log: { id: string; meta: unknown; createdAt: Date }) => ({
       id: (log.meta as any)?.alertId as string || log.id,
       ruleName: (log.meta as any)?.ruleName as string || 'unknown',
       severity: (log.meta as any)?.severity as string || 'low',
