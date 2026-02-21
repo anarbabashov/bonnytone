@@ -11,8 +11,8 @@ services:
       - "127.0.0.1:3000:3000"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_STREAM_URL=/stream/hls/bonnytone/live.m3u8
-      - NEXT_PUBLIC_AZURACAST_API_URL=/api/azuracast/nowplaying/bonnytone
+      - NEXT_PUBLIC_STREAM_URL=/stream/hls/btradio/live.m3u8
+      - NEXT_PUBLIC_AZURACAST_API_URL=/api/azuracast/nowplaying/btradio
       - AZURACAST_ORIGIN=http://azuracast:80
     networks:
       - btradio
