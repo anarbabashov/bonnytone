@@ -12,6 +12,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG NEXT_PUBLIC_STREAM_URL=/stream/hls/btradio/live.m3u8
+ARG NEXT_PUBLIC_AZURACAST_API_URL=/api/azuracast/nowplaying/btradio
+ENV NEXT_PUBLIC_STREAM_URL=$NEXT_PUBLIC_STREAM_URL
+ENV NEXT_PUBLIC_AZURACAST_API_URL=$NEXT_PUBLIC_AZURACAST_API_URL
 RUN npx prisma generate
 RUN npm run build
 
