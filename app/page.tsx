@@ -13,7 +13,7 @@ import ThemeToggle from "@/components/layout/ThemeToggle/ThemeToggle"
 
 export default function Home() {
   const { resolvedTheme } = useTheme()
-  const { analyserNode } = useRadioPlayer()
+  const { togglePlay, analyserNode } = useRadioPlayer()
   useNowPlaying()
 
   const isPlaying = usePlayerStore((s) => s.isPlaying)
@@ -21,7 +21,6 @@ export default function Home() {
   const volume = usePlayerStore((s) => s.volume)
   const isMuted = usePlayerStore((s) => s.isMuted)
   const streamStatus = usePlayerStore((s) => s.streamStatus)
-  const togglePlay = usePlayerStore((s) => s.togglePlay)
   const setVolume = usePlayerStore((s) => s.setVolume)
   const toggleMute = usePlayerStore((s) => s.toggleMute)
 
@@ -128,6 +127,7 @@ export default function Home() {
         />
         <VolumeSlider volume={volume} onChange={setVolume} />
       </div>
+
     </div>
   )
 }

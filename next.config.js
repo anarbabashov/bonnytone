@@ -9,7 +9,11 @@ const nextConfig = {
     return [
       {
         source: '/stream/hls/:path*',
-        destination: `${streamOrigin}/hls/:path*`,
+        destination: `${streamOrigin}/stream/hls/:path*`,
+      },
+      {
+        source: '/api/azuracast/:path*',
+        destination: `${streamOrigin}/api/azuracast/:path*`,
       },
     ]
   },

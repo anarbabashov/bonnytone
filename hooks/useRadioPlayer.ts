@@ -33,228 +33,161 @@ const QUALITY_MAP: Record<Exclude<Quality, 'auto'>, number> = {
   high: 2,
 }
 
-export interface RadioPlayerRefs {
+export interface RadioPlayerAPI {
+  play: () => void
+  pause: () => void
+  togglePlay: () => void
   analyserNode: AnalyserNode | null
 }
 
-export function useRadioPlayer(): RadioPlayerRefs {
+/**
+ * Radio player hook.
+ * Returns play/pause functions that should be called DIRECTLY from click handlers
+ * (not through Zustand → useEffect) to preserve user gesture context for audio.play().
+ */
+export function useRadioPlayer(): RadioPlayerAPI {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const hlsRef = useRef<Hls | null>(null)
-  const audioContextRef = useRef<AudioContext | null>(null)
-  const gainNodeRef = useRef<GainNode | null>(null)
-  const analyserNodeRef = useRef<AnalyserNode | null>(null)
-  const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null)
-  const isAudioInitializedRef = useRef(false)
-  const isWebAudioInitializedRef = useRef(false)
-  const pendingPlayRef = useRef(false)
-  const hlsReadyRef = useRef(false)
+  const reconnectHandler = useRef<(() => void) | null>(null)
 
-  const store = usePlayerStore()
-
-  // Stable reference to store actions (avoid re-renders)
-  const storeRef = useRef(store)
-  storeRef.current = store
-
-  // --- Create persistent audio element (once) ---
-  const getAudioElement = useCallback((): HTMLAudioElement => {
-    if (audioRef.current) return audioRef.current
-
-    const audio = new Audio()
-    audio.crossOrigin = 'anonymous'
-    audio.preload = 'none'
-    audioRef.current = audio
-    return audio
+  // Lazily create Audio element in the DOM (avoid SSR crash; must be in DOM for Chrome audio output)
+  const getAudio = useCallback(() => {
+    if (!audioRef.current) {
+      const audio = new Audio()
+      audio.style.display = 'none'
+      document.body.appendChild(audio)
+      // Auto-reconnect when stream ends (AzuraCast track transitions)
+      audio.addEventListener('ended', () => reconnectHandler.current?.())
+      audioRef.current = audio
+    }
+    return audioRef.current
   }, [])
 
-  // --- Initialize Web Audio API (on first user gesture) ---
-  const initWebAudio = useCallback(() => {
-    if (isWebAudioInitializedRef.current) return
-    const audio = audioRef.current
-    if (!audio) return
-
-    try {
-      const ctx = new AudioContext()
-      audioContextRef.current = ctx
-
-      const source = ctx.createMediaElementSource(audio)
-      sourceNodeRef.current = source
-
-      const analyser = ctx.createAnalyser()
-      analyser.fftSize = 256
-      analyserNodeRef.current = analyser
-
-      const gain = ctx.createGain()
-      gain.gain.value = storeRef.current.volume
-      gainNodeRef.current = gain
-
-      // Audio graph: source -> analyser -> gain -> destination
-      source.connect(analyser)
-      analyser.connect(gain)
-      gain.connect(ctx.destination)
-
-      isWebAudioInitializedRef.current = true
-    } catch (err) {
-      // Web Audio API not supported or failed -- audio still plays through <audio> element
-      console.warn('[RadioPlayer] Web Audio API init failed:', err)
+  // Destroy current HLS instance (used before reconnecting)
+  const destroyHls = useCallback(() => {
+    if (hlsRef.current) {
+      hlsRef.current.destroy()
+      hlsRef.current = null
     }
   }, [])
 
-  // --- Initialize HLS stream (once) ---
-  const initStream = useCallback(() => {
-    if (isAudioInitializedRef.current || !STREAM_URL) return
-    isAudioInitializedRef.current = true
+  // Create a fresh HLS instance and attach to audio element
+  const initHls = useCallback((audio: HTMLAudioElement) => {
+    destroyHls()
 
-    const audio = getAudioElement()
-    storeRef.current.setStreamStatus('connecting')
+    const store = usePlayerStore.getState()
+    store.setStreamStatus('connecting')
+    store.setIsBuffering(true)
 
-    // Safari: native HLS support
-    if (audio.canPlayType('application/vnd.apple.mpegurl')) {
-      audio.src = STREAM_URL
+    const hls = new Hls(HLS_CONFIG)
+    hlsRef.current = hls
+    hls.loadSource(STREAM_URL)
+    hls.attachMedia(audio)
 
-      audio.addEventListener('loadedmetadata', () => {
-        storeRef.current.setStreamStatus('live')
-        storeRef.current.resetErrorCount()
-        hlsReadyRef.current = true
-
-        if (pendingPlayRef.current) {
-          pendingPlayRef.current = false
-          audio.play().catch((err) => {
-            console.warn('[RadioPlayer] Play failed after Safari ready:', err)
-            storeRef.current.setIsPlaying(false)
-            storeRef.current.setIsBuffering(false)
-          })
-        }
-      }, { once: true })
-
-      audio.addEventListener('error', () => {
-        storeRef.current.setStreamStatus('error')
-        storeRef.current.setError('Stream failed to load')
-        storeRef.current.incrementErrorCount()
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      const s = usePlayerStore.getState()
+      s.setStreamStatus('live')
+      s.resetErrorCount()
+      audio.play().catch((err) => {
+        console.warn('[RadioPlayer] Play failed after manifest:', err)
+        s.setIsPlaying(false)
+        s.setIsBuffering(false)
       })
+    })
 
+    hls.on(Hls.Events.ERROR, (_event, data) => {
+      if (data.fatal) {
+        const s = usePlayerStore.getState()
+        s.incrementErrorCount()
+        s.setError(data.details)
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+          s.setStreamStatus('error')
+          hls.startLoad()
+        } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+          hls.recoverMediaError()
+        } else {
+          s.setStreamStatus('offline')
+          hls.destroy()
+          hlsRef.current = null
+        }
+      }
+    })
+
+    hls.on(Hls.Events.FRAG_BUFFERED, () => {
+      usePlayerStore.getState().setIsBuffering(false)
+    })
+  }, [destroyHls])
+
+  // --- Play: called directly from click handler ---
+  const play = useCallback(() => {
+    const audio = getAudio()
+    const store = usePlayerStore.getState()
+
+    store.setIsPlaying(true)
+    store.setIsBuffering(true)
+
+    // Already have HLS — just resume
+    if (hlsRef.current) {
+      audio.play().catch((err) => {
+        console.warn('[RadioPlayer] Resume failed:', err)
+        store.setIsPlaying(false)
+        store.setIsBuffering(false)
+      })
       return
     }
 
-    // Chrome/Firefox/Edge: HLS.js via MSE
+    if (!STREAM_URL) return
+
+    // HLS.js first (Chrome/Firefox/Edge/etc.) — must check before canPlayType
+    // because some Chrome builds on Mac return 'maybe' for HLS mime type
     if (Hls.isSupported()) {
-      const hls = new Hls(HLS_CONFIG)
-      hlsRef.current = hls
-
-      hls.loadSource(STREAM_URL)
-      hls.attachMedia(audio)
-
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        storeRef.current.setStreamStatus('live')
-        storeRef.current.resetErrorCount()
-        hlsReadyRef.current = true
-
-        if (pendingPlayRef.current) {
-          pendingPlayRef.current = false
-          audio.play().catch((err) => {
-            console.warn('[RadioPlayer] Play failed after manifest parsed:', err)
-            storeRef.current.setIsPlaying(false)
-            storeRef.current.setIsBuffering(false)
-          })
-        }
-      })
-
-      hls.on(Hls.Events.ERROR, (_event, data) => {
-        if (data.fatal) {
-          storeRef.current.incrementErrorCount()
-          storeRef.current.setError(data.details)
-
-          switch (data.type) {
-            case Hls.ErrorTypes.NETWORK_ERROR:
-              storeRef.current.setStreamStatus('error')
-              // Try to recover from network errors
-              hls.startLoad()
-              break
-            case Hls.ErrorTypes.MEDIA_ERROR:
-              // Try to recover from media errors
-              hls.recoverMediaError()
-              break
-            default:
-              // Unrecoverable error -- destroy and mark offline
-              storeRef.current.setStreamStatus('offline')
-              hls.destroy()
-              break
-          }
-        }
-      })
-
-      hls.on(Hls.Events.FRAG_BUFFERED, () => {
-        storeRef.current.setIsBuffering(false)
-      })
-
+      initHls(audio)
       return
     }
 
-    // No HLS support at all
-    storeRef.current.setStreamStatus('error')
-    storeRef.current.setError('HLS is not supported in this browser')
-  }, [getAudioElement])
-
-  // --- Play/Pause control ---
-  useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
-
-    if (store.isPlaying) {
-      // Initialize stream on first play
-      if (!isAudioInitializedRef.current) {
-        initStream()
-      }
-
-      // Initialize Web Audio on first play (user gesture)
-      initWebAudio()
-
-      // Resume AudioContext if suspended (iOS requirement)
-      if (audioContextRef.current?.state === 'suspended') {
-        audioContextRef.current.resume()
-      }
-
-      storeRef.current.setIsBuffering(true)
-
-      // Only call play() if HLS is ready; otherwise set pending flag
-      if (hlsReadyRef.current) {
-        audio.play().catch((err) => {
-          console.warn('[RadioPlayer] Play failed:', err)
-          storeRef.current.setIsPlaying(false)
-          storeRef.current.setIsBuffering(false)
-        })
-      } else {
-        pendingPlayRef.current = true
-      }
-    } else {
-      pendingPlayRef.current = false
-      audio.pause()
-      storeRef.current.setIsBuffering(false)
+    // Safari fallback: native HLS
+    if (audio.canPlayType('application/vnd.apple.mpegurl')) {
+      store.setStreamStatus('connecting')
+      audio.src = STREAM_URL
+      audio.addEventListener('loadedmetadata', () => {
+        const s = usePlayerStore.getState()
+        s.setStreamStatus('live')
+        audio.play().catch(() => s.setIsPlaying(false))
+      }, { once: true })
+      return
     }
-  }, [store.isPlaying, initStream, initWebAudio])
 
-  // --- Volume control ---
+    store.setStreamStatus('error')
+    store.setError('HLS is not supported')
+  }, [getAudio, initHls])
+
+  // --- Pause: called directly from click handler ---
+  const pause = useCallback(() => {
+    audioRef.current?.pause()
+    const store = usePlayerStore.getState()
+    store.setIsPlaying(false)
+    store.setIsBuffering(false)
+  }, [])
+
+  // --- Toggle ---
+  const togglePlay = useCallback(() => {
+    usePlayerStore.getState().isPlaying ? pause() : play()
+  }, [play, pause])
+
+  // --- Volume ---
+  const store = usePlayerStore()
   useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
-
-    const effectiveVolume = store.isMuted ? 0 : store.volume
-
-    // Prefer Web Audio gain node for volume (smoother)
-    if (gainNodeRef.current) {
-      gainNodeRef.current.gain.value = effectiveVolume
-      audio.volume = 1 // Let gain node handle volume
-    } else {
-      audio.volume = effectiveVolume
+    if (audioRef.current) {
+      audioRef.current.volume = store.isMuted ? 0 : store.volume
     }
   }, [store.volume, store.isMuted])
 
-  // --- Quality control ---
+  // --- Quality ---
   useEffect(() => {
     const hls = hlsRef.current
     if (!hls) return
-
     if (store.quality === 'auto') {
-      hls.currentLevel = -1 // Auto
+      hls.currentLevel = -1
     } else {
       const level = QUALITY_MAP[store.quality]
       if (level !== undefined && level < hls.levels.length) {
@@ -263,73 +196,43 @@ export function useRadioPlayer(): RadioPlayerRefs {
     }
   }, [store.quality])
 
-  // --- Audio element event listeners ---
-  useEffect(() => {
-    const audio = getAudioElement()
-
-    const onWaiting = () => storeRef.current.setIsBuffering(true)
-    const onPlaying = () => {
-      storeRef.current.setIsBuffering(false)
-      storeRef.current.setStreamStatus('live')
+  // Keep reconnect handler ref updated (called from ended event on audio element)
+  reconnectHandler.current = () => {
+    const audio = audioRef.current
+    const s = usePlayerStore.getState()
+    if (audio && s.isPlaying && STREAM_URL && Hls.isSupported()) {
+      console.log('[RadioPlayer] Stream ended, reconnecting...')
+      initHls(audio)
     }
-    const onPause = () => storeRef.current.setIsPlaying(false)
-    const onEnded = () => {
-      storeRef.current.setIsPlaying(false)
-      storeRef.current.setStreamStatus('offline')
-    }
+  }
 
-    audio.addEventListener('waiting', onWaiting)
-    audio.addEventListener('playing', onPlaying)
-    audio.addEventListener('pause', onPause)
-    audio.addEventListener('ended', onEnded)
-
-    return () => {
-      audio.removeEventListener('waiting', onWaiting)
-      audio.removeEventListener('playing', onPlaying)
-      audio.removeEventListener('pause', onPause)
-      audio.removeEventListener('ended', onEnded)
-    }
-  }, [getAudioElement])
-
-  // --- Media Session API (lock screen controls) ---
+  // --- Media Session ---
   useEffect(() => {
     if (!('mediaSession' in navigator)) return
-
     navigator.mediaSession.metadata = new MediaMetadata({
       title: 'BTRadio',
       artist: 'Live Stream',
-      artwork: [
-        { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-        { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
-      ],
     })
-
-    navigator.mediaSession.setActionHandler('play', () => {
-      storeRef.current.play()
-    })
-    navigator.mediaSession.setActionHandler('pause', () => {
-      storeRef.current.pause()
-    })
-
+    navigator.mediaSession.setActionHandler('play', play)
+    navigator.mediaSession.setActionHandler('pause', pause)
     return () => {
       navigator.mediaSession.setActionHandler('play', null)
       navigator.mediaSession.setActionHandler('pause', null)
     }
-  }, [])
+  }, [play, pause])
 
-  // --- Cleanup on unmount ---
+  // --- Cleanup ---
   useEffect(() => {
     return () => {
-      hlsRef.current?.destroy()
-      audioContextRef.current?.close()
+      destroyHls()
       if (audioRef.current) {
         audioRef.current.pause()
         audioRef.current.src = ''
+        audioRef.current.remove()
+        audioRef.current = null
       }
     }
-  }, [])
+  }, [destroyHls])
 
-  return {
-    analyserNode: analyserNodeRef.current,
-  }
+  return { play, pause, togglePlay, analyserNode: null }
 }
