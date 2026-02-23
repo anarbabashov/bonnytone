@@ -46,6 +46,8 @@ export function useRadioPlayer(): RadioPlayerRefs {
   const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null)
   const isAudioInitializedRef = useRef(false)
   const isWebAudioInitializedRef = useRef(false)
+  const pendingPlayRef = useRef(false)
+  const hlsReadyRef = useRef(false)
 
   const store = usePlayerStore()
 
@@ -112,6 +114,16 @@ export function useRadioPlayer(): RadioPlayerRefs {
       audio.addEventListener('loadedmetadata', () => {
         storeRef.current.setStreamStatus('live')
         storeRef.current.resetErrorCount()
+        hlsReadyRef.current = true
+
+        if (pendingPlayRef.current) {
+          pendingPlayRef.current = false
+          audio.play().catch((err) => {
+            console.warn('[RadioPlayer] Play failed after Safari ready:', err)
+            storeRef.current.setIsPlaying(false)
+            storeRef.current.setIsBuffering(false)
+          })
+        }
       }, { once: true })
 
       audio.addEventListener('error', () => {
@@ -134,6 +146,16 @@ export function useRadioPlayer(): RadioPlayerRefs {
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         storeRef.current.setStreamStatus('live')
         storeRef.current.resetErrorCount()
+        hlsReadyRef.current = true
+
+        if (pendingPlayRef.current) {
+          pendingPlayRef.current = false
+          audio.play().catch((err) => {
+            console.warn('[RadioPlayer] Play failed after manifest parsed:', err)
+            storeRef.current.setIsPlaying(false)
+            storeRef.current.setIsBuffering(false)
+          })
+        }
       })
 
       hls.on(Hls.Events.ERROR, (_event, data) => {
@@ -192,12 +214,19 @@ export function useRadioPlayer(): RadioPlayerRefs {
       }
 
       storeRef.current.setIsBuffering(true)
-      audio.play().catch((err) => {
-        console.warn('[RadioPlayer] Play failed:', err)
-        storeRef.current.setIsPlaying(false)
-        storeRef.current.setIsBuffering(false)
-      })
+
+      // Only call play() if HLS is ready; otherwise set pending flag
+      if (hlsReadyRef.current) {
+        audio.play().catch((err) => {
+          console.warn('[RadioPlayer] Play failed:', err)
+          storeRef.current.setIsPlaying(false)
+          storeRef.current.setIsBuffering(false)
+        })
+      } else {
+        pendingPlayRef.current = true
+      }
     } else {
+      pendingPlayRef.current = false
       audio.pause()
       storeRef.current.setIsBuffering(false)
     }
