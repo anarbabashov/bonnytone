@@ -39,11 +39,11 @@ export default function Waveform({ isPlaying, volume, theme, analyserNode }: Wav
     const isDark = theme !== "light"
 
     const drawHalftoneWave = () => {
-      const gridSize = 20
+      const gridSize = 16
       const rows = Math.ceil(canvas.height / gridSize)
       const cols = Math.ceil(canvas.width / gridSize)
       const t = timeRef.current
-      const baseIntensity = isPlaying ? 0.3 + volume * 0.7 : 0.15
+      const baseIntensity = isPlaying ? 0.15 + volume * 0.15 : 0.1
 
       // Get real frequency data if analyser is available and playing
       let hasRealData = false
@@ -81,16 +81,16 @@ export default function Waveform({ isPlaying, volume, theme, analyserNode }: Wav
             waveOffset = Math.sin(norm * 10 - t) * 0.5 + 0.5
           }
 
-          const size = gridSize * waveOffset * 0.8 * intensity * 2
+          const size = gridSize * waveOffset * 0.8 * intensity * 3
 
           ctx.beginPath()
           ctx.arc(cx, cy, Math.max(size / 2, 0), 0, Math.PI * 2)
 
           const hue = 180 + Math.sin(t * 0.15 + norm * 3) * 40
           if (isDark) {
-            const lightness = 50 + Math.sin(t * 0.1 + norm * 2) * 10
-            const alpha = waveOffset * intensity
-            ctx.fillStyle = `hsla(${hue}, 70%, ${lightness}%, ${alpha})`
+            const lightness = 45 + Math.sin(t * 0.1 + norm * 2) * 8
+            const alpha = Math.min(waveOffset * intensity, 0.45)
+            ctx.fillStyle = `hsla(${hue}, 55%, ${lightness}%, ${alpha})`
           } else {
             const lightness = 40 + Math.sin(t * 0.1 + norm * 2) * 10
             const alpha = waveOffset * intensity * 0.6
