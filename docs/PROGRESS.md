@@ -1,4 +1,4 @@
-# BTRadio v1.0.0 -- Development Progress
+# BTRadio DJ v1.0.0 -- Development Progress
 
 **Branch:** `feature/music-player`, `feature/production-hardening`
 **Started:** 2026-02-18
@@ -64,7 +64,7 @@
 | 4.5 | Listener count display | Done | 30c95c4 |
 | 4.6 | Quality indicator | Skipped | auto only |
 | 4.7 | Now-playing display (title/artist) | Done | 30c95c4 |
-| 4.8 | Rebrand to BTRadio + logo icon | Done | c603c2f |
+| 4.8 | Rebrand to BTRadio DJ + logo icon | Done | c603c2f |
 | 4.9 | Dynamic tab title + favicon (stream status) | Done | c603c2f |
 | 4.10 | Next.js HLS rewrite proxy (CORS fix) | Done | c603c2f |
 | 4.11 | useNowPlaying sets stream status on page load | Done | c603c2f |
@@ -109,5 +109,5 @@
 | 2026-02-18 | ff45a79 | Phase 2 (Audio Engine) | hls.js, useRadioPlayer hook, PlayerStore (Zustand), Waveform AnalyserNode, mediaSession, share button, 21 unit tests |
 | 2026-02-19 | 6c2c71f | Phase 4 (UI Polish) | StreamStatus component, GlassPlayButton buffering spinner, jest jsdom + lucide-react resolver, 16 component tests |
 | 2026-02-19 | 30c95c4 | Phase 4 (UI Polish) | NowPlayingBar, useNowPlaying hook (AzuraCast API polling), listener count, store nowPlaying state, 9 new tests |
-| 2026-02-19 | c603c2f | Phase 4 (UI Polish) | Rebrand to BTRadio, dynamic tab title + colored favicon, logo icon, CORS proxy, stream status on page load, disable play when offline, hydration fix |
+| 2026-02-19 | c603c2f | Phase 4 (UI Polish) | Rebrand to BTRadio DJ, dynamic tab title + colored favicon, logo icon, CORS proxy, stream status on page load, disable play when offline, hydration fix |
 | 2026-02-20 | pending | Phase 5 (Deployment) | Dockerfile, docker-compose.prod.yml, Nginx config, standalone build, hide auth, .env template |

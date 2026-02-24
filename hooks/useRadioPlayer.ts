@@ -210,7 +210,7 @@ export function useRadioPlayer(): RadioPlayerAPI {
   useEffect(() => {
     if (!('mediaSession' in navigator)) return
     navigator.mediaSession.metadata = new MediaMetadata({
-      title: 'BTRadio',
+      title: 'BTRadio DJ',
       artist: 'Live Stream',
     })
     navigator.mediaSession.setActionHandler('play', play)
