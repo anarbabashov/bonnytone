@@ -26,9 +26,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <div className="min-h-screen">
-              <main>{children}</main>
-            </div>
+            <main>{children}</main>
           </AuthProvider>
         </ThemeProvider>
       </body>

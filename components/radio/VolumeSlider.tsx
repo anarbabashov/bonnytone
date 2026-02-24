@@ -13,7 +13,7 @@ export default function VolumeSlider({ volume, onChange }: VolumeSliderProps) {
   const muted = volume === 0
 
   return (
-    <div className="flex items-center gap-4 w-80 sm:w-96">
+    <div className="flex items-center gap-3 w-full max-w-80 sm:max-w-96">
       <button
         onClick={() => onChange(volume > 0 ? 0 : 0.7)}
         className="transition-colors duration-200 cursor-pointer focus:outline-none"

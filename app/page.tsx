@@ -80,7 +80,7 @@ export default function Home() {
   }
 
   return (
-    <div className="relative h-screen overflow-hidden flex flex-col items-center justify-center px-4">
+    <div className="relative h-[100dvh] overflow-hidden flex flex-col items-center justify-center px-4">
       <Waveform
         isPlaying={isPlaying}
         volume={isMuted ? 0 : volume}
@@ -111,7 +111,7 @@ export default function Home() {
       </div>
 
       {/* Player controls */}
-      <div className="flex flex-col items-center gap-8 sm:gap-10 mt-40 sm:mt-40">
+      <div className="flex flex-col items-center gap-6 sm:gap-10 translate-y-[65px] min-[630px]:translate-y-[90px]">
         <GlassPlayButton
           isPlaying={isPlaying}
           isBuffering={isBuffering}

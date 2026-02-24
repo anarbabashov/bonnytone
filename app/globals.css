@@ -78,6 +78,10 @@
   * {
     @apply border-border;
   }
+  html, body {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
   body {
     @apply bg-background text-foreground;
   }
