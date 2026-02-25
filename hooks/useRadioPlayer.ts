@@ -49,6 +49,9 @@ export function useRadioPlayer(): RadioPlayerAPI {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const hlsRef = useRef<Hls | null>(null)
   const reconnectHandler = useRef<(() => void) | null>(null)
+  const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reconnectAttempts = useRef(0)
+  const MAX_RECONNECT_ATTEMPTS = 10
 
   // Lazily create Audio element in the DOM (avoid SSR crash; must be in DOM for Chrome audio output)
   const getAudio = useCallback(() => {
@@ -71,13 +74,44 @@ export function useRadioPlayer(): RadioPlayerAPI {
     }
   }, [])
 
-  // Create a fresh HLS instance and attach to audio element
-  const initHls = useCallback((audio: HTMLAudioElement) => {
-    destroyHls()
+  // Schedule a reconnect with backoff delay (silent — no UI flicker between retries)
+  const scheduleReconnect = useCallback((audio: HTMLAudioElement) => {
+    if (reconnectTimer.current) clearTimeout(reconnectTimer.current)
+    if (reconnectAttempts.current >= MAX_RECONNECT_ATTEMPTS) {
+      console.warn('[RadioPlayer] Max reconnect attempts reached')
+      const s = usePlayerStore.getState()
+      s.setStreamStatus('offline')
+      s.setIsPlaying(false)
+      s.setIsBuffering(false)
+      return
+    }
+    // Show buffering only on the first attempt — subsequent retries stay silent
+    if (reconnectAttempts.current === 0) {
+      const s = usePlayerStore.getState()
+      s.setStreamStatus('connecting')
+      s.setIsBuffering(true)
+    }
+    const delay = Math.min(2000 + reconnectAttempts.current * 1000, 10000)
+    reconnectAttempts.current++
+    console.log(`[RadioPlayer] Reconnecting in ${delay}ms (attempt ${reconnectAttempts.current})`)
+    reconnectTimer.current = setTimeout(() => {
+      if (usePlayerStore.getState().isPlaying) {
+        initHls(audio, true)
+      }
+    }, delay)
+  }, []) // initHls added below via ref pattern
 
-    const store = usePlayerStore.getState()
-    store.setStreamStatus('connecting')
-    store.setIsBuffering(true)
+  // Create a fresh HLS instance and attach to audio element
+  // silent=true skips UI state updates (used during background reconnect retries)
+  const initHls = useCallback((audio: HTMLAudioElement, silent = false) => {
+    destroyHls()
+    if (reconnectTimer.current) clearTimeout(reconnectTimer.current)
+
+    if (!silent) {
+      const store = usePlayerStore.getState()
+      store.setStreamStatus('connecting')
+      store.setIsBuffering(true)
+    }
 
     const hls = new Hls(HLS_CONFIG)
     hlsRef.current = hls
@@ -87,7 +121,9 @@ export function useRadioPlayer(): RadioPlayerAPI {
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
       const s = usePlayerStore.getState()
       s.setStreamStatus('live')
+      s.setIsBuffering(false)
       s.resetErrorCount()
+      reconnectAttempts.current = 0
       audio.play().catch((err) => {
         console.warn('[RadioPlayer] Play failed after manifest:', err)
         s.setIsPlaying(false)
@@ -100,15 +136,15 @@ export function useRadioPlayer(): RadioPlayerAPI {
         const s = usePlayerStore.getState()
         s.incrementErrorCount()
         s.setError(data.details)
-        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-          s.setStreamStatus('error')
-          hls.startLoad()
-        } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+        if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
           hls.recoverMediaError()
         } else {
-          s.setStreamStatus('offline')
-          hls.destroy()
-          hlsRef.current = null
+          // Network error or other fatal: destroy and retry silently
+          console.warn('[RadioPlayer] Fatal error, will reconnect:', data.type, data.details)
+          destroyHls()
+          if (s.isPlaying) {
+            scheduleReconnect(audio)
+          }
         }
       }
     })
@@ -116,7 +152,7 @@ export function useRadioPlayer(): RadioPlayerAPI {
     hls.on(Hls.Events.FRAG_BUFFERED, () => {
       usePlayerStore.getState().setIsBuffering(false)
     })
-  }, [destroyHls])
+  }, [destroyHls, scheduleReconnect])
 
   // --- Play: called directly from click handler ---
   const play = useCallback(() => {
@@ -201,8 +237,9 @@ export function useRadioPlayer(): RadioPlayerAPI {
     const audio = audioRef.current
     const s = usePlayerStore.getState()
     if (audio && s.isPlaying && STREAM_URL && Hls.isSupported()) {
-      console.log('[RadioPlayer] Stream ended, reconnecting...')
-      initHls(audio)
+      console.log('[RadioPlayer] Stream ended, scheduling reconnect...')
+      reconnectAttempts.current = 0 // reset — this is a natural track transition
+      scheduleReconnect(audio)
     }
   }
 
@@ -224,6 +261,7 @@ export function useRadioPlayer(): RadioPlayerAPI {
   // --- Cleanup ---
   useEffect(() => {
     return () => {
+      if (reconnectTimer.current) clearTimeout(reconnectTimer.current)
       destroyHls()
       if (audioRef.current) {
         audioRef.current.pause()
