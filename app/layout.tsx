@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AuthProvider } from "@/lib/auth/AuthContext";
 import ThemeProvider from "@/components/layout/ThemeProvider/ThemeProvider";
+import { PlayerProvider } from "@/components/player/PlayerProvider";
+import PersistentBottomBar from "@/components/player/PersistentBottomBar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -87,7 +89,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <main>{children}</main>
+            <PlayerProvider>
+              <main className="pb-16">{children}</main>
+              <PersistentBottomBar />
+            </PlayerProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -149,7 +149,7 @@ export default function ResetPasswordPage() {
   // Show loading while validating token
   if (tokenValid === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="flex items-center justify-center px-4 pb-16">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -168,7 +168,7 @@ export default function ResetPasswordPage() {
   // Show error if token is invalid
   if (tokenValid === false) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="flex items-center justify-center px-4 pb-16">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
@@ -205,7 +205,7 @@ export default function ResetPasswordPage() {
   // Show success message
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="flex items-center justify-center px-4 pb-16">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -236,7 +236,7 @@ export default function ResetPasswordPage() {
   const passwordValidation = validatePassword(formData.password)
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+    <div className="flex items-center justify-center px-4 pb-16">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Reset Password</CardTitle>

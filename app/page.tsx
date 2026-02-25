@@ -3,8 +3,7 @@
 import { useEffect } from "react"
 import { useTheme } from "next-themes"
 import { usePlayerStore } from "@/store/playerStore"
-import { useRadioPlayer } from "@/hooks/useRadioPlayer"
-import { useNowPlaying } from "@/hooks/useNowPlaying"
+import { usePlayer } from "@/hooks/usePlayer"
 import Waveform from "@/components/radio/Waveform"
 import GlassPlayButton from "@/components/radio/GlassPlayButton"
 import ActionButtons from "@/components/radio/ActionButtons"
@@ -14,8 +13,7 @@ import AuthButtons from "@/components/layout/AuthButtons"
 
 export default function Home() {
   const { resolvedTheme } = useTheme()
-  const { togglePlay, analyserNode } = useRadioPlayer()
-  useNowPlaying()
+  const { togglePlay, analyserNode } = usePlayer()
 
   const isPlaying = usePlayerStore((s) => s.isPlaying)
   const isBuffering = usePlayerStore((s) => s.isBuffering)
@@ -81,7 +79,7 @@ export default function Home() {
   }
 
   return (
-    <div className="relative h-[100dvh] overflow-hidden flex flex-col items-center justify-center px-4">
+    <div className="relative h-[100dvh] overflow-hidden flex flex-col items-center justify-center px-4" style={{ overscrollBehavior: 'none' }}>
       <Waveform
         isPlaying={isPlaying}
         volume={isMuted ? 0 : volume}
