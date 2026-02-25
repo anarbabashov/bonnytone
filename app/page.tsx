@@ -10,6 +10,7 @@ import GlassPlayButton from "@/components/radio/GlassPlayButton"
 import ActionButtons from "@/components/radio/ActionButtons"
 import VolumeSlider from "@/components/radio/VolumeSlider"
 import ThemeToggle from "@/components/layout/ThemeToggle/ThemeToggle"
+import AuthButtons from "@/components/layout/AuthButtons"
 
 export default function Home() {
   const { resolvedTheme } = useTheme()
@@ -107,7 +108,10 @@ export default function Home() {
           </svg>
           <span className="text-lg font-semibold text-foreground">BTRadio DJ</span>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2 sm:gap-4">
+          <AuthButtons />
+          <ThemeToggle />
+        </div>
       </div>
 
       {/* Player controls */}

@@ -80,12 +80,12 @@
 | 5.5 | Hide auth UI for initial launch | Done | pending |
 | 5.6 | .env.production.example template | Done | pending |
 | 5.7 | Provision VPS (OVHcloud VPS-1, 4vCPU/8GB) | Done | -- |
-| 5.8 | VPS setup: Docker, clone repo, env config | Pending | -- |
-| 5.9 | DNS: point domain A records to VPS | Pending | -- |
-| 5.10 | SSL: Let's Encrypt cert via Certbot | Pending | -- |
-| 5.11 | Deploy: docker compose up | Pending | -- |
-| 5.12 | AzuraCast: create station, enable HLS, upload music | Pending | -- |
-| 5.13 | Verify: stream plays, tab status works, share works | Pending | -- |
+| 5.8 | VPS setup: Docker, clone repo, env config | Done | -- |
+| 5.9 | DNS: point domain A records to VPS | Done | -- |
+| 5.10 | SSL: Let's Encrypt cert via Certbot | Done | -- |
+| 5.11 | Deploy: docker compose up | Done | -- |
+| 5.12 | AzuraCast: create station, enable HLS, upload music | Done | -- |
+| 5.13 | Verify: stream plays, tab status works, share works | Done | -- |
 
 ## Phase 6: Post-Launch (Future)
 
@@ -97,7 +97,7 @@
 | 6.4 | CDN for static assets | Pending | -- |
 | 6.5 | Stream health monitoring | Pending | -- |
 | 6.6 | Smoke test suite (Playwright) | Pending | -- |
-| 6.7 | Re-enable auth + user accounts | Pending | -- |
+| 6.7 | Re-enable auth + user accounts | In Progress | -- |
 | 6.8 | Phase 3 cross-device testing | Pending | -- |
 
 ---
@@ -111,3 +111,4 @@
 | 2026-02-19 | 30c95c4 | Phase 4 (UI Polish) | NowPlayingBar, useNowPlaying hook (AzuraCast API polling), listener count, store nowPlaying state, 9 new tests |
 | 2026-02-19 | c603c2f | Phase 4 (UI Polish) | Rebrand to BTRadio DJ, dynamic tab title + colored favicon, logo icon, CORS proxy, stream status on page load, disable play when offline, hydration fix |
 | 2026-02-20 | pending | Phase 5 (Deployment) | Dockerfile, docker-compose.prod.yml, Nginx config, standalone build, hide auth, .env template |
+| 2026-02-24 | -- | Phase 5 (Deployment) | VPS provisioned, DNS, SSL, Docker Compose deployed, AzuraCast station live at bonnytone.com |
