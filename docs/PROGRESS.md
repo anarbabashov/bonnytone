@@ -96,9 +96,26 @@
 | 6.3 | Performance audit (Lighthouse) | Pending | -- |
 | 6.4 | CDN for static assets | Pending | -- |
 | 6.5 | Stream health monitoring | Pending | -- |
-| 6.6 | Smoke test suite (Playwright) | Pending | -- |
-| 6.7 | Re-enable auth + user accounts | In Progress | -- |
+| 6.6 | Smoke test suite (Playwright) | Done | d1b4ac0 |
+| 6.7 | Re-enable auth + user accounts | Done | 1c883ba |
 | 6.8 | Phase 3 cross-device testing | Pending | -- |
+
+## Phase 7: Persistent Radio Player
+
+| # | Task | Status | Commit |
+|---|---|---|---|
+| 7.1 | Create PlayerProvider (extract audio engine from useRadioPlayer) | Done | pending |
+| 7.2 | Create usePlayer hook (thin context consumer) | Done | pending |
+| 7.3 | Create PersistentBottomBar (compact player for non-homepage) | Done | pending |
+| 7.4 | Wire PlayerProvider + PersistentBottomBar into root layout | Done | pending |
+| 7.5 | Update page.tsx to use usePlayer instead of useRadioPlayer | Done | pending |
+| 7.6 | Remove global overflow:hidden, delete useRadioPlayer hook | Done | pending |
+| 7.7 | Add AudioContext + AnalyserNode for real frequency visualization | Done | pending |
+| 7.8 | Frequency spectrum band colors on waveform (bass→highs mapping) | Done | pending |
+| 7.9 | Create shared auth layout with logo + home link | Done | pending |
+| 7.10 | Center auth forms vertically in viewport | Done | pending |
+| 7.11 | Gate track info behind authentication in bottom bar | Done | pending |
+| 7.12 | Bottom bar volume slider matching homepage design | Done | pending |
 
 ---
 
@@ -112,3 +129,6 @@
 | 2026-02-19 | c603c2f | Phase 4 (UI Polish) | Rebrand to BTRadio DJ, dynamic tab title + colored favicon, logo icon, CORS proxy, stream status on page load, disable play when offline, hydration fix |
 | 2026-02-20 | pending | Phase 5 (Deployment) | Dockerfile, docker-compose.prod.yml, Nginx config, standalone build, hide auth, .env template |
 | 2026-02-24 | -- | Phase 5 (Deployment) | VPS provisioned, DNS, SSL, Docker Compose deployed, AzuraCast station live at bonnytone.com |
+| 2026-02-24 | d1b4ac0 | Phase 6 (Post-Launch) | Playwright smoke test suite for radio player and auth flows |
+| 2026-02-24 | 1c883ba | Phase 6 (Post-Launch) | Re-enable auth buttons in radio player top bar |
+| 2026-02-25 | pending | Phase 7 (Persistent Player) | PlayerProvider, PersistentBottomBar, usePlayer hook, auth layout, spectrum waveform colors, auth-gated track info |
