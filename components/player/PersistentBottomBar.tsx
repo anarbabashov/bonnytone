@@ -105,7 +105,7 @@ export default function PersistentBottomBar() {
             )}
           </button>
 
-          <div className="relative w-28 sm:w-40 h-8 flex items-center touch-none">
+          <div className="relative w-28 sm:w-40 h-8 flex items-center" style={{ touchAction: 'pan-x' }}>
             <div className="absolute w-full h-1.5 rounded-full bg-muted/40">
               <div
                 className="h-full rounded-full"

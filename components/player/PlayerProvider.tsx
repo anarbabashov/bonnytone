@@ -53,6 +53,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const reconnectAttempts = useRef(0)
   const audioContextRef = useRef<AudioContext | null>(null)
   const sourceCreatedRef = useRef(false)
+  const gainNodeRef = useRef<GainNode | null>(null)
   const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null)
 
   // Run now-playing polling globally
@@ -71,7 +72,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     return audioRef.current
   }, [])
 
-  // Ensure AudioContext + AnalyserNode exist (call on first play for user gesture)
+  // Ensure AudioContext + AnalyserNode + GainNode exist (call on first play for user gesture)
   const ensureAudioContext = useCallback((audio: HTMLAudioElement) => {
     if (audioContextRef.current && sourceCreatedRef.current) return
     try {
@@ -81,8 +82,20 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         const source = ctx.createMediaElementSource(audio)
         const analyser = ctx.createAnalyser()
         analyser.fftSize = 256
-        source.connect(analyser)
+        const gain = ctx.createGain()
+        // Chain: source → gain → analyser → destination
+        // GainNode before analyser so analyser sees volume-adjusted signal
+        // (matches old audio.volume behavior for waveform visualization)
+        source.connect(gain)
+        gain.connect(analyser)
         analyser.connect(ctx.destination)
+        gainNodeRef.current = gain
+        // Apply current volume immediately
+        const state = usePlayerStore.getState()
+        gain.gain.value = state.isMuted ? 0 : state.volume
+        // Keep audio.volume at 1 — iOS ignores it anyway, and
+        // GainNode handles actual volume on all platforms
+        audio.volume = 1
         setAnalyserNode(analyser)
         sourceCreatedRef.current = true
       }
@@ -231,11 +244,15 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     usePlayerStore.getState().isPlaying ? pause() : play()
   }, [play, pause])
 
-  // Volume sync — subscribe via useEffect to avoid leaking subscriptions
+  // Volume sync — use GainNode (works on iOS where audio.volume is read-only)
   useEffect(() => {
     const unsub = usePlayerStore.subscribe((state) => {
-      if (audioRef.current) {
-        audioRef.current.volume = state.isMuted ? 0 : state.volume
+      const vol = state.isMuted ? 0 : state.volume
+      if (gainNodeRef.current) {
+        gainNodeRef.current.gain.value = vol
+      } else if (audioRef.current) {
+        // Fallback before AudioContext is created (desktop only, iOS ignores this)
+        audioRef.current.volume = vol
       }
     })
     return unsub

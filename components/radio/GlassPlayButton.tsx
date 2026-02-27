@@ -37,17 +37,17 @@ export default function GlassPlayButton({ isPlaying, isBuffering, disabled, onTo
 
   const icon = isBuffering ? (
     <Loader2
-      className="w-16 h-16 sm:w-20 sm:h-20 text-foreground animate-spin"
+      className="w-16 h-16 sm:w-20 sm:h-20 min-[1920px]:w-28 min-[1920px]:h-28 text-foreground animate-spin"
       strokeWidth={1}
     />
   ) : isPlaying ? (
     <Pause
-      className="w-16 h-16 sm:w-20 sm:h-20 text-foreground transition-transform duration-200 group-hover:scale-110"
+      className="w-16 h-16 sm:w-20 sm:h-20 min-[1920px]:w-28 min-[1920px]:h-28 text-foreground transition-transform duration-200 group-hover:scale-110"
       strokeWidth={1}
     />
   ) : (
     <Play
-      className="w-16 h-16 sm:w-20 sm:h-20 text-foreground fill-foreground ml-2 transition-transform duration-200 group-hover:scale-110"
+      className="w-16 h-16 sm:w-20 sm:h-20 min-[1920px]:w-28 min-[1920px]:h-28 text-foreground fill-foreground ml-2 transition-transform duration-200 group-hover:scale-110"
     />
   )
 
@@ -57,7 +57,7 @@ export default function GlassPlayButton({ isPlaying, isBuffering, disabled, onTo
     <button
       onClick={onToggle}
       disabled={disabled}
-      className={`group relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 rounded-full flex items-center justify-center transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95 cursor-pointer'}`}
+      className={`group relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 min-[1920px]:w-80 min-[1920px]:h-80 rounded-full flex items-center justify-center transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95 cursor-pointer'}`}
       style={glassStyle}
       aria-label={label}
       suppressHydrationWarning

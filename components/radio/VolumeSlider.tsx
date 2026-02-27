@@ -19,25 +19,25 @@ export default function VolumeSlider({ volume, onChange }: VolumeSliderProps) {
   const fillOpacity = volume * 0.5
 
   return (
-    <div className="flex items-center gap-3 w-80 sm:w-96">
+    <div className="flex items-center gap-3 min-[1920px]:gap-5 w-80 sm:w-96 min-[1920px]:w-[32rem]">
       <button
         onClick={decrease}
         className="transition-colors duration-200 cursor-pointer focus:outline-none"
         aria-label={muted ? "Muted" : "Decrease volume"}
       >
         {muted ? (
-          <VolumeX className="w-7 h-7 text-foreground" />
+          <VolumeX className="w-7 h-7 min-[1920px]:w-9 min-[1920px]:h-9 text-foreground" />
         ) : (
           <Volume
-            className={`w-7 h-7 transition-colors duration-200 ${
+            className={`w-7 h-7 min-[1920px]:w-9 min-[1920px]:h-9 transition-colors duration-200 ${
               lowActive ? "text-foreground" : "text-muted-foreground"
             }`}
           />
         )}
       </button>
 
-      <div className="relative flex-1 h-10 flex items-center group touch-none">
-        <div className="absolute w-full h-1.5 rounded-full bg-muted/40">
+      <div className="relative flex-1 h-10 flex items-center group" style={{ touchAction: 'pan-x' }}>
+        <div className="absolute w-full h-1.5 min-[1920px]:h-2 rounded-full bg-muted/40">
           <div
             className="h-full rounded-full"
             style={{
@@ -58,7 +58,7 @@ export default function VolumeSlider({ volume, onChange }: VolumeSliderProps) {
           aria-label="Volume"
         />
         <div
-          className="absolute w-6 h-6 rounded-full bg-foreground shadow-lg pointer-events-none"
+          className="absolute w-6 h-6 min-[1920px]:w-8 min-[1920px]:h-8 rounded-full bg-foreground shadow-lg pointer-events-none"
           style={{ left: `calc(${volume * 100}% - 12px)` }}
         />
       </div>
@@ -69,7 +69,7 @@ export default function VolumeSlider({ volume, onChange }: VolumeSliderProps) {
         aria-label="Increase volume"
       >
         <Volume2
-          className={`w-7 h-7 transition-colors duration-200 ${
+          className={`w-7 h-7 min-[1920px]:w-9 min-[1920px]:h-9 transition-colors duration-200 ${
             highActive ? "text-foreground" : "text-muted-foreground"
           }`}
         />
