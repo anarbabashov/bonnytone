@@ -5,12 +5,12 @@ import { VolumeX, Volume2, ArrowUpRight, MoreHorizontal } from "lucide-react"
 interface ActionButtonsProps {
   isMuted: boolean
   onToggleMute: () => void
-  onShare: () => void
+  onPopOut: () => void
   onMore: () => void
   hideMute?: boolean
 }
 
-export default function ActionButtons({ isMuted, onToggleMute, onShare, onMore, hideMute }: ActionButtonsProps) {
+export default function ActionButtons({ isMuted, onToggleMute, onPopOut, onMore, hideMute }: ActionButtonsProps) {
   const btnBase =
     "w-12 h-12 sm:w-14 sm:h-14 min-[1920px]:w-18 min-[1920px]:h-18 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 
@@ -35,9 +35,9 @@ export default function ActionButtons({ isMuted, onToggleMute, onShare, onMore, 
       )}
 
       <button
-        onClick={onShare}
+        onClick={onPopOut}
         className={`${btnBase} glass-subtle text-muted-foreground hover:text-foreground`}
-        aria-label="Share"
+        aria-label="Open mini player"
       >
         <ArrowUpRight className="w-6 h-6 sm:w-7 sm:h-7 min-[1920px]:w-9 min-[1920px]:h-9" strokeWidth={1.5} />
       </button>

@@ -21,8 +21,8 @@ export default function PersistentBottomBar() {
   const isMuted = usePlayerStore((s) => s.isMuted)
   const setVolume = usePlayerStore((s) => s.setVolume)
 
-  // Hidden on homepage (full-screen player) and when player was never activated
-  if (pathname === '/' || streamStatus === 'idle') return null
+  // Hidden on homepage, mini player, and when player was never activated
+  if (pathname === '/' || pathname === '/mini-player' || streamStatus === 'idle') return null
 
   const statusDot =
     streamStatus === 'live'
