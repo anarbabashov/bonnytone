@@ -90,12 +90,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         gain.connect(analyser)
         analyser.connect(ctx.destination)
         gainNodeRef.current = gain
-        // Apply current volume immediately
+        // Apply current volume immediately via both methods
         const state = usePlayerStore.getState()
-        gain.gain.value = state.isMuted ? 0 : state.volume
-        // Keep audio.volume at 1 — iOS ignores it anyway, and
-        // GainNode handles actual volume on all platforms
-        audio.volume = 1
+        const vol = state.isMuted ? 0 : state.volume
+        gain.gain.value = vol
+        // Also set audio.volume as fallback — Safari may not route audio
+        // through Web Audio graph properly, so GainNode alone isn't enough.
+        // On iOS audio.volume is read-only (no-op), which is fine.
+        audio.volume = vol
         setAnalyserNode(analyser)
         sourceCreatedRef.current = true
       }
@@ -244,15 +246,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     usePlayerStore.getState().isPlaying ? pause() : play()
   }, [play, pause])
 
-  // Volume sync — use GainNode (works on iOS where audio.volume is read-only)
+  // Volume sync — set both GainNode and audio.volume for Safari compatibility
   useEffect(() => {
     const unsub = usePlayerStore.subscribe((state) => {
       const vol = state.isMuted ? 0 : state.volume
+      // Always set audio.volume as Safari fallback (no-op on iOS)
+      if (audioRef.current) {
+        audioRef.current.volume = vol
+      }
+      // Also set GainNode for iOS and proper Web Audio routing
       if (gainNodeRef.current) {
         gainNodeRef.current.gain.value = vol
-      } else if (audioRef.current) {
-        // Fallback before AudioContext is created (desktop only, iOS ignores this)
-        audioRef.current.volume = vol
       }
     })
     return unsub

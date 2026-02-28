@@ -22,6 +22,18 @@ export default function Home() {
   const setVolume = usePlayerStore((s) => s.setVolume)
   const toggleMute = usePlayerStore((s) => s.toggleMute)
 
+  // Lock scroll on homepage (Safari ignores overflow:hidden on child divs)
+  useEffect(() => {
+    document.documentElement.style.overflow = 'hidden'
+    document.body.style.overflow = 'hidden'
+    document.body.style.overscrollBehavior = 'none'
+    return () => {
+      document.documentElement.style.overflow = ''
+      document.body.style.overflow = ''
+      document.body.style.overscrollBehavior = ''
+    }
+  }, [])
+
   useEffect(() => {
     const STATUS_LABELS: Record<string, string> = {
       live: 'LIVE',
