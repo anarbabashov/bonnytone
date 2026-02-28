@@ -111,11 +111,10 @@
 | 7.5 | Update page.tsx to use usePlayer instead of useRadioPlayer | Done | pending |
 | 7.6 | Remove global overflow:hidden, delete useRadioPlayer hook | Done | pending |
 | 7.7 | Add AudioContext + AnalyserNode for real frequency visualization | Done | pending |
-| 7.8 | Frequency spectrum band colors on waveform (bass→highs mapping) | Done | pending |
-| 7.9 | Create shared auth layout with logo + home link | Done | pending |
-| 7.10 | Center auth forms vertically in viewport | Done | pending |
-| 7.11 | Gate track info behind authentication in bottom bar | Done | pending |
-| 7.12 | Bottom bar volume slider matching homepage design | Done | pending |
+| 7.8 | Create shared auth layout with logo + home link | Done | pending |
+| 7.9 | Center auth forms vertically in viewport | Done | pending |
+| 7.10 | Gate track info behind authentication in bottom bar | Done | pending |
+| 7.11 | Bottom bar volume slider matching homepage design | Done | pending |
 
 ---
 
