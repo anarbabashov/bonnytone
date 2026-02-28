@@ -4,12 +4,14 @@ import { usePathname } from 'next/navigation'
 import { usePlayerStore } from '@/store/playerStore'
 import { usePlayer } from '@/hooks/usePlayer'
 import { useAuth } from '@/lib/auth/AuthContext'
+import { useMobilePlatform } from '@/hooks/useMobilePlatform'
 import { Play, Pause, Volume, Volume2, VolumeX } from 'lucide-react'
 
 export default function PersistentBottomBar() {
   const pathname = usePathname()
   const { togglePlay } = usePlayer()
   const { isAuthenticated } = useAuth()
+  const isMobile = useMobilePlatform()
 
   const isPlaying = usePlayerStore((s) => s.isPlaying)
   const isBuffering = usePlayerStore((s) => s.isBuffering)
@@ -87,63 +89,65 @@ export default function PersistentBottomBar() {
           )}
         </div>
 
-        {/* Volume — same design as homepage VolumeSlider */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <button
-            onClick={decrease}
-            className="transition-colors duration-200 cursor-pointer focus:outline-none"
-            aria-label={muted ? 'Muted' : 'Decrease volume'}
-          >
-            {muted ? (
-              <VolumeX className="w-5 h-5 text-foreground" />
-            ) : (
-              <Volume
-                className={`w-5 h-5 transition-colors duration-200 ${
-                  lowActive ? 'text-foreground' : 'text-muted-foreground'
-                }`}
-              />
-            )}
-          </button>
+        {/* Volume — hidden on mobile (iOS/Android control volume via hardware) */}
+        {!isMobile && (
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={decrease}
+              className="transition-colors duration-200 cursor-pointer focus:outline-none"
+              aria-label={muted ? 'Muted' : 'Decrease volume'}
+            >
+              {muted ? (
+                <VolumeX className="w-5 h-5 text-foreground" />
+              ) : (
+                <Volume
+                  className={`w-5 h-5 transition-colors duration-200 ${
+                    lowActive ? 'text-foreground' : 'text-muted-foreground'
+                  }`}
+                />
+              )}
+            </button>
 
-          <div className="relative w-28 sm:w-40 h-8 flex items-center" style={{ touchAction: 'pan-x' }}>
-            <div className="absolute w-full h-1.5 rounded-full bg-muted/40">
+            <div className="relative w-28 sm:w-40 h-8 flex items-center" style={{ touchAction: 'pan-x' }}>
+              <div className="absolute w-full h-1.5 rounded-full bg-muted/40">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${effectiveVolume * 100}%`,
+                    background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))',
+                    opacity: fillOpacity,
+                  }}
+                />
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.01}
+                value={effectiveVolume}
+                onChange={(e) => setVolume(parseFloat(e.target.value))}
+                className="absolute w-full h-8 opacity-0 cursor-pointer"
+                aria-label="Volume"
+              />
               <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${effectiveVolume * 100}%`,
-                  background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))',
-                  opacity: fillOpacity,
-                }}
+                className="absolute w-4 h-4 rounded-full bg-foreground shadow-lg pointer-events-none"
+                style={{ left: `calc(${effectiveVolume * 100}% - 8px)` }}
               />
             </div>
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.01}
-              value={effectiveVolume}
-              onChange={(e) => setVolume(parseFloat(e.target.value))}
-              className="absolute w-full h-8 opacity-0 cursor-pointer"
-              aria-label="Volume"
-            />
-            <div
-              className="absolute w-4 h-4 rounded-full bg-foreground shadow-lg pointer-events-none"
-              style={{ left: `calc(${effectiveVolume * 100}% - 8px)` }}
-            />
-          </div>
 
-          <button
-            onClick={increase}
-            className="transition-colors duration-200 cursor-pointer focus:outline-none"
-            aria-label="Increase volume"
-          >
-            <Volume2
-              className={`w-5 h-5 transition-colors duration-200 ${
-                highActive ? 'text-foreground' : 'text-muted-foreground'
-              }`}
-            />
-          </button>
-        </div>
+            <button
+              onClick={increase}
+              className="transition-colors duration-200 cursor-pointer focus:outline-none"
+              aria-label="Increase volume"
+            >
+              <Volume2
+                className={`w-5 h-5 transition-colors duration-200 ${
+                  highActive ? 'text-foreground' : 'text-muted-foreground'
+                }`}
+              />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

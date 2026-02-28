@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { useTheme } from "next-themes"
 import { usePlayerStore } from "@/store/playerStore"
 import { usePlayer } from "@/hooks/usePlayer"
+import { useMobilePlatform } from "@/hooks/useMobilePlatform"
 import Waveform from "@/components/radio/Waveform"
 import GlassPlayButton from "@/components/radio/GlassPlayButton"
 import ActionButtons from "@/components/radio/ActionButtons"
@@ -13,6 +14,7 @@ import ThemeToggle from "@/components/layout/ThemeToggle/ThemeToggle"
 export default function Home() {
   const { resolvedTheme } = useTheme()
   const { togglePlay, analyserNode } = usePlayer()
+  const isMobile = useMobilePlatform()
 
   const isPlaying = usePlayerStore((s) => s.isPlaying)
   const isBuffering = usePlayerStore((s) => s.isBuffering)
@@ -136,8 +138,9 @@ export default function Home() {
           onToggleMute={toggleMute}
           onShare={handleShare}
           onMore={() => {}}
+          hideMute={isMobile}
         />
-        <VolumeSlider volume={volume} onChange={setVolume} />
+        {!isMobile && <VolumeSlider volume={volume} onChange={setVolume} />}
       </div>
 
     </div>
