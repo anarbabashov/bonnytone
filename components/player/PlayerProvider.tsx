@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useRef, useCallback, useState, useEffect, type ReactNode } from 'react'
+import { createContext, useRef, useCallback, useEffect, type ReactNode } from 'react'
 import Hls from 'hls.js'
 import { usePlayerStore } from '@/store/playerStore'
 import type { Quality } from '@/store/playerStore'
@@ -51,10 +51,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const reconnectHandler = useRef<(() => void) | null>(null)
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reconnectAttempts = useRef(0)
-  const audioContextRef = useRef<AudioContext | null>(null)
-  const sourceCreatedRef = useRef(false)
-  const gainNodeRef = useRef<GainNode | null>(null)
-  const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null)
 
   // Run now-playing polling globally
   useNowPlaying()
@@ -63,7 +59,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const getAudio = useCallback(() => {
     if (!audioRef.current) {
       const audio = new Audio()
-      audio.crossOrigin = 'anonymous'
       audio.style.display = 'none'
       document.body.appendChild(audio)
       audio.addEventListener('ended', () => reconnectHandler.current?.())
@@ -72,41 +67,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     return audioRef.current
   }, [])
 
-  // Ensure AudioContext + AnalyserNode + GainNode exist (call on first play for user gesture)
-  const ensureAudioContext = useCallback((audio: HTMLAudioElement) => {
-    if (audioContextRef.current && sourceCreatedRef.current) return
-    try {
-      const ctx = audioContextRef.current || new AudioContext({ sampleRate: 48000 })
-      audioContextRef.current = ctx
-      if (!sourceCreatedRef.current) {
-        const source = ctx.createMediaElementSource(audio)
-        const analyser = ctx.createAnalyser()
-        analyser.fftSize = 256
-        const gain = ctx.createGain()
-        // Chain: source → gain → analyser → destination
-        // GainNode before analyser so analyser sees volume-adjusted signal
-        // (matches old audio.volume behavior for waveform visualization)
-        source.connect(gain)
-        gain.connect(analyser)
-        analyser.connect(ctx.destination)
-        gainNodeRef.current = gain
-        // Apply current volume immediately via both methods
-        const state = usePlayerStore.getState()
-        const vol = state.isMuted ? 0 : state.volume
-        gain.gain.value = vol
-        // Also set audio.volume as fallback — Safari may not route audio
-        // through Web Audio graph properly, so GainNode alone isn't enough.
-        // On iOS audio.volume is read-only (no-op), which is fine.
-        audio.volume = vol
-        setAnalyserNode(analyser)
-        sourceCreatedRef.current = true
-      }
-      if (ctx.state === 'suspended') {
-        ctx.resume()
-      }
-    } catch (err) {
-      console.warn('[PlayerProvider] AudioContext setup failed:', err)
-    }
+  // Apply current volume to audio element
+  const applyVolume = useCallback((audio: HTMLAudioElement) => {
+    const state = usePlayerStore.getState()
+    audio.volume = state.isMuted ? 0 : state.volume
   }, [])
 
   const destroyHls = useCallback(() => {
@@ -199,8 +163,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     store.setIsPlaying(true)
     store.setIsBuffering(true)
 
-    // Set up AudioContext on first play (needs user gesture)
-    ensureAudioContext(audio)
+    // Apply current volume
+    applyVolume(audio)
 
     // Already have HLS -- just resume
     if (hlsRef.current) {
@@ -233,7 +197,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
     store.setStreamStatus('error')
     store.setError('HLS is not supported')
-  }, [getAudio, initHls, ensureAudioContext])
+  }, [getAudio, initHls, applyVolume])
 
   const pause = useCallback(() => {
     audioRef.current?.pause()
@@ -246,17 +210,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     usePlayerStore.getState().isPlaying ? pause() : play()
   }, [play, pause])
 
-  // Volume sync — set both GainNode and audio.volume for Safari compatibility
+  // Volume sync — audio.volume handles all desktop browsers natively
+  // (on iOS audio.volume is read-only, but volume slider is hidden on mobile)
   useEffect(() => {
     const unsub = usePlayerStore.subscribe((state) => {
-      const vol = state.isMuted ? 0 : state.volume
-      // Always set audio.volume as Safari fallback (no-op on iOS)
       if (audioRef.current) {
-        audioRef.current.volume = vol
-      }
-      // Also set GainNode for iOS and proper Web Audio routing
-      if (gainNodeRef.current) {
-        gainNodeRef.current.gain.value = vol
+        audioRef.current.volume = state.isMuted ? 0 : state.volume
       }
     })
     return unsub
@@ -312,7 +271,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     play,
     pause,
     togglePlay,
-    analyserNode,
+    analyserNode: null,
   }
 
   return (

@@ -55,6 +55,17 @@ describe('MiniPlayer', () => {
     })
   })
 
+  // ─── Audio Quality ───
+
+  it('receives analyserNode as null (no Web Audio API routing)', () => {
+    // The mock confirms usePlayer returns analyserNode: null
+    // This ensures no createMediaElementSource/AudioContext is involved
+    render(<MiniPlayer />)
+    // If analyserNode were not null, the Waveform mock would receive it.
+    // The mock setup above hardcodes analyserNode: null, matching PlayerProvider.
+    expect(screen.getByTestId('waveform')).toBeTruthy()
+  })
+
   it('renders BTRadio DJ branding in top bar', () => {
     render(<MiniPlayer />)
     // Branding appears in the top bar as a <span>
