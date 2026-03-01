@@ -282,6 +282,9 @@ export default function Home() {
         {!isMobile && <VolumeSlider volume={volume} onChange={setVolume} />}
       </div>
 
+      <span className="fixed bottom-4 left-0 right-0 text-center text-xs text-muted-foreground/50">
+        &copy; {new Date().getFullYear()} BonnyTone Radio
+      </span>
     </div>
   )
 }
