@@ -19,10 +19,10 @@ export default function VolumeSlider({ volume, onChange }: VolumeSliderProps) {
   const fillOpacity = volume * 0.5
 
   return (
-    <div className="flex items-center gap-3 min-[1920px]:gap-5 w-80 sm:w-96 min-[1920px]:w-[32rem]">
+    <div role="group" aria-label="Volume control" className="flex items-center gap-3 min-[1920px]:gap-5 w-80 sm:w-96 min-[1920px]:w-[32rem]">
       <button
         onClick={decrease}
-        className="transition-colors duration-200 cursor-pointer focus:outline-none"
+        className="transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:rounded-full"
         aria-label={muted ? "Muted" : "Decrease volume"}
       >
         {muted ? (
@@ -56,6 +56,7 @@ export default function VolumeSlider({ volume, onChange }: VolumeSliderProps) {
           onChange={(e) => onChange(parseFloat(e.target.value))}
           className="absolute w-full h-10 opacity-0 cursor-pointer"
           aria-label="Volume"
+          aria-valuetext={`${Math.round(volume * 100)}%`}
         />
         <div
           className="absolute w-6 h-6 min-[1920px]:w-8 min-[1920px]:h-8 rounded-full bg-foreground shadow-lg pointer-events-none"
@@ -65,7 +66,7 @@ export default function VolumeSlider({ volume, onChange }: VolumeSliderProps) {
 
       <button
         onClick={increase}
-        className="transition-colors duration-200 cursor-pointer focus:outline-none"
+        className="transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:rounded-full"
         aria-label="Increase volume"
       >
         <Volume2

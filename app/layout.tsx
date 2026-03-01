@@ -82,6 +82,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:bg-background focus:text-foreground focus:rounded-md focus:ring-2 focus:ring-ring"
+        >
+          Skip to main content
+        </a>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -90,7 +96,7 @@ export default function RootLayout({
         >
           <AuthProvider>
             <PlayerProvider>
-              <main className="pb-16">{children}</main>
+              <main id="main-content" className="pb-16">{children}</main>
               <PersistentBottomBar />
             </PlayerProvider>
           </AuthProvider>

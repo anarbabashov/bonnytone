@@ -60,6 +60,7 @@ export default function GlassPlayButton({ isPlaying, isBuffering, disabled, onTo
       className={`group relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 min-[1920px]:w-80 min-[1920px]:h-80 rounded-full flex items-center justify-center transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95 cursor-pointer'}`}
       style={glassStyle}
       aria-label={label}
+      aria-pressed={isPlaying}
       suppressHydrationWarning
     >
       {icon}

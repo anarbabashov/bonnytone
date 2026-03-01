@@ -69,6 +69,23 @@ export default function Home() {
     }
   }, [streamStatus, hasPlayed])
 
+  // Global keyboard shortcuts: Space = toggle play, M = toggle mute
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target as HTMLElement)?.isContentEditable) return
+
+      if (e.code === 'Space') {
+        e.preventDefault()
+        togglePlay()
+      } else if (e.key === 'm' || e.key === 'M') {
+        toggleMute()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [togglePlay, toggleMute])
+
   // Lock scroll on homepage (Safari ignores overflow:hidden on child divs)
   useEffect(() => {
     document.documentElement.style.overflow = 'hidden'
@@ -174,6 +191,8 @@ export default function Home() {
             const pingColor = isError ? '' : isPending ? 'bg-orange-400' : 'bg-green-400'
             return (
               <div
+                role="status"
+                aria-live="polite"
                 className={`absolute bottom-full mb-6 sm:mb-10 min-[1920px]:mb-14 glass flex items-center justify-center rounded-full p-2 transition-all duration-700 ease-in-out ${
                   isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 } ${badgeExpanded ? 'gap-2 px-4' : 'gap-0'}`}

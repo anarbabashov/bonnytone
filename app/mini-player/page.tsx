@@ -76,6 +76,21 @@ export default function MiniPlayer() {
     document.title = label ? `${label} | BTRadio DJ` : 'BTRadio DJ'
   }, [streamStatus])
 
+  // Global keyboard shortcuts: Space = toggle play
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target as HTMLElement)?.isContentEditable) return
+
+      if (e.code === 'Space') {
+        e.preventDefault()
+        togglePlay()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [togglePlay])
+
   // Lock scroll
   useEffect(() => {
     document.documentElement.style.overflow = 'hidden'
@@ -133,6 +148,8 @@ export default function MiniPlayer() {
       <div className="flex-1 flex flex-col items-center justify-center gap-5 px-4 z-10 -translate-y-[25px]">
         {/* Status badge — glass dot, then smoothly expands into pill */}
         <div
+          role="status"
+          aria-live="polite"
           className={`glass flex items-center justify-center rounded-full p-1.5 transition-all duration-700 ease-in-out ${
             isDot ? 'opacity-100' : 'opacity-0 pointer-events-none'
           } ${badgeExpanded ? 'gap-2 px-3 py-1.5' : 'gap-0'}`}
@@ -165,6 +182,7 @@ export default function MiniPlayer() {
           disabled={streamStatus === 'offline'}
           className="w-28 h-28 rounded-full glass flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label={isPlaying ? 'Pause' : 'Play'}
+          aria-pressed={isPlaying}
         >
           {isBuffering ? (
             <div className="w-11 h-11 border-[3px] border-primary border-t-transparent rounded-full animate-spin" />
