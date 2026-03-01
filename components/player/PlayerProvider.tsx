@@ -76,7 +76,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const ensureAudioContext = useCallback((audio: HTMLAudioElement) => {
     if (audioContextRef.current && sourceCreatedRef.current) return
     try {
-      const ctx = audioContextRef.current || new AudioContext()
+      const ctx = audioContextRef.current || new AudioContext({ sampleRate: 48000 })
       audioContextRef.current = ctx
       if (!sourceCreatedRef.current) {
         const source = ctx.createMediaElementSource(audio)
