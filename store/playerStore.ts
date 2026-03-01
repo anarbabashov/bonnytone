@@ -23,6 +23,9 @@ export interface PlayerState {
   listenerCount: number | null
   nowPlaying: NowPlayingInfo | null
 
+  // Stream quality
+  currentBitrate: number | null
+
   // Error
   errorCount: number
   lastError: string | null
@@ -39,6 +42,7 @@ export interface PlayerState {
   setStreamStatus: (status: StreamStatus) => void
   setListenerCount: (count: number | null) => void
   setNowPlaying: (info: NowPlayingInfo | null) => void
+  setCurrentBitrate: (bitrate: number | null) => void
   setError: (error: string | null) => void
   incrementErrorCount: () => void
   resetErrorCount: () => void
@@ -55,6 +59,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   streamStatus: 'idle',
   listenerCount: null,
   nowPlaying: null,
+  currentBitrate: null,
   errorCount: 0,
   lastError: null,
 
@@ -92,6 +97,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   setStreamStatus: (streamStatus: StreamStatus) => set({ streamStatus }),
   setListenerCount: (listenerCount: number | null) => set({ listenerCount }),
   setNowPlaying: (nowPlaying: NowPlayingInfo | null) => set({ nowPlaying }),
+  setCurrentBitrate: (currentBitrate: number | null) => set({ currentBitrate }),
   setError: (lastError: string | null) => set({ lastError }),
   incrementErrorCount: () => set((s) => ({ errorCount: s.errorCount + 1 })),
   resetErrorCount: () => set({ errorCount: 0, lastError: null }),

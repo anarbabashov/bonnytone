@@ -78,6 +78,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       hlsRef.current.destroy()
       hlsRef.current = null
     }
+    usePlayerStore.getState().setCurrentBitrate(null)
   }, [])
 
   const scheduleReconnect = useCallback((audio: HTMLAudioElement) => {
@@ -154,6 +155,13 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     hls.on(Hls.Events.FRAG_BUFFERED, () => {
       usePlayerStore.getState().setIsBuffering(false)
     })
+
+    hls.on(Hls.Events.LEVEL_SWITCHED, (_event, data) => {
+      const level = hls.levels[data.level]
+      if (level) {
+        usePlayerStore.getState().setCurrentBitrate(level.bitrate)
+      }
+    })
   }, [destroyHls, scheduleReconnect])
 
   const play = useCallback(() => {
@@ -204,6 +212,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const store = usePlayerStore.getState()
     store.setIsPlaying(false)
     store.setIsBuffering(false)
+    store.setCurrentBitrate(null)
   }, [])
 
   const togglePlay = useCallback(() => {

@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useMemo } from "react"
 import { useTheme } from "next-themes"
 import { usePlayerStore } from "@/store/playerStore"
 import { usePlayer } from "@/hooks/usePlayer"
 import { useMobilePlatform } from "@/hooks/useMobilePlatform"
+import { useRotatingText } from "@/hooks/useRotatingText"
 import Waveform from "@/components/radio/Waveform"
 import GlassPlayButton from "@/components/radio/GlassPlayButton"
 import ActionButtons from "@/components/radio/ActionButtons"
@@ -22,6 +23,7 @@ export default function Home() {
   const isMuted = usePlayerStore((s) => s.isMuted)
   const streamStatus = usePlayerStore((s) => s.streamStatus)
   const lastError = usePlayerStore((s) => s.lastError)
+  const currentBitrate = usePlayerStore((s) => s.currentBitrate)
   const setVolume = usePlayerStore((s) => s.setVolume)
   const toggleMute = usePlayerStore((s) => s.toggleMute)
 
@@ -85,6 +87,19 @@ export default function Home() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [togglePlay, toggleMute])
+
+  // Rotating text items for LIVE badge
+  const rotatingItems = useMemo(() => {
+    if (isPlaying && currentBitrate) {
+      return [
+        { text: `${Math.round(currentBitrate / 1000)} kbps`, duration: 10000 },
+        { text: 'Main Stage', duration: 40000 },
+        { text: '24/7', duration: 10000 },
+      ]
+    }
+    return [{ text: 'Main Stage', duration: 10000 }]
+  }, [isPlaying, currentBitrate])
+  const { text: rotatingText, phase: rotatingPhase, measureRef: rotatingRef, width: rotatingWidth } = useRotatingText(rotatingItems)
 
   // Lock scroll on homepage (Safari ignores overflow:hidden on child divs)
   useEffect(() => {
@@ -210,13 +225,41 @@ export default function Home() {
                 >
                   {isError ? 'ERROR' : isPending ? 'PENDING' : 'LIVE'}
                 </span>
-                <span
-                  className={`text-sm text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-700 ease-in-out ${
-                    badgeExpanded ? 'max-w-[300px] opacity-100' : 'max-w-0 opacity-0'
-                  }`}
-                >
-                  {isError ? (lastError || 'Stream unavailable') : isPending ? 'We apologize, something went wrong' : 'Main Stage'}
-                </span>
+                {isError ? (
+                  <span
+                    className={`text-sm text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-700 ease-in-out ${
+                      badgeExpanded ? 'max-w-[300px] opacity-100' : 'max-w-0 opacity-0'
+                    }`}
+                  >
+                    {lastError || 'Stream unavailable'}
+                  </span>
+                ) : isPending ? (
+                  <span
+                    className={`text-sm text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-700 ease-in-out ${
+                      badgeExpanded ? 'max-w-[300px] opacity-100' : 'max-w-0 opacity-0'
+                    }`}
+                  >
+                    We apologize, something went wrong
+                  </span>
+                ) : (
+                  <span
+                    className="overflow-hidden inline-block"
+                    style={{
+                      width: badgeExpanded ? rotatingWidth : 0,
+                      opacity: badgeExpanded ? 1 : 0,
+                      transition: 'width 500ms ease-in-out, opacity 700ms ease-in-out',
+                    }}
+                  >
+                    <span
+                      ref={rotatingRef}
+                      className={`text-sm text-muted-foreground whitespace-nowrap inline-block ${
+                        rotatingPhase === 'visible' ? 'slide-visible' : rotatingPhase === 'exiting' ? 'slide-out' : 'slide-in'
+                      }`}
+                    >
+                      {rotatingText}
+                    </span>
+                  </span>
+                )}
               </div>
             )
           })()}

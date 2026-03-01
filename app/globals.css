@@ -100,6 +100,24 @@
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid hsla(var(--glass-border) / 0.15);
   }
+
+  .slide-visible {
+    transform: translateX(0);
+    opacity: 1;
+    transition: transform 500ms, opacity 500ms;
+  }
+
+  .slide-out {
+    transform: translateX(-100%);
+    opacity: 0;
+    transition: transform 500ms, opacity 500ms;
+  }
+
+  .slide-in {
+    transform: translateX(-60%);
+    opacity: 0;
+    transition: none;
+  }
 }
 
 @keyframes pulse-glow {

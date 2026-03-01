@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import { useTheme } from 'next-themes'
 import { usePlayerStore } from '@/store/playerStore'
 import { usePlayer } from '@/hooks/usePlayer'
 import { useMobilePlatform } from '@/hooks/useMobilePlatform'
+import { useRotatingText } from '@/hooks/useRotatingText'
 import Waveform from '@/components/radio/Waveform'
 import VolumeSlider from '@/components/radio/VolumeSlider'
 import { Play, Pause, X } from 'lucide-react'
@@ -21,6 +22,7 @@ export default function MiniPlayer() {
   const streamStatus = usePlayerStore((s) => s.streamStatus)
   const nowPlaying = usePlayerStore((s) => s.nowPlaying)
   const lastError = usePlayerStore((s) => s.lastError)
+  const currentBitrate = usePlayerStore((s) => s.currentBitrate)
   const setVolume = usePlayerStore((s) => s.setVolume)
 
   // Badge only appears after user has clicked play at least once
@@ -90,6 +92,19 @@ export default function MiniPlayer() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [togglePlay])
+
+  // Rotating text items for LIVE badge
+  const rotatingItems = useMemo(() => {
+    if (isPlaying && currentBitrate) {
+      return [
+        { text: `${Math.round(currentBitrate / 1000)} kbps`, duration: 10000 },
+        { text: 'Main Stage', duration: 40000 },
+        { text: '24/7', duration: 10000 },
+      ]
+    }
+    return [{ text: 'Main Stage', duration: 10000 }]
+  }, [isPlaying, currentBitrate])
+  const { text: rotatingText, phase: rotatingPhase, measureRef: rotatingRef, width: rotatingWidth } = useRotatingText(rotatingItems)
 
   // Lock scroll
   useEffect(() => {
@@ -167,13 +182,41 @@ export default function MiniPlayer() {
           >
             {isError ? 'ERROR' : isPending ? 'PENDING' : 'LIVE'}
           </span>
-          <span
-            className={`text-xs text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-700 ease-in-out ${
-              badgeExpanded ? 'max-w-[300px] opacity-100' : 'max-w-0 opacity-0'
-            }`}
-          >
-            {isError ? (lastError || 'Stream unavailable') : isPending ? 'We apologize, something went wrong' : 'Main Stage'}
-          </span>
+          {isError ? (
+            <span
+              className={`text-xs text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-700 ease-in-out ${
+                badgeExpanded ? 'max-w-[300px] opacity-100' : 'max-w-0 opacity-0'
+              }`}
+            >
+              {lastError || 'Stream unavailable'}
+            </span>
+          ) : isPending ? (
+            <span
+              className={`text-xs text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-700 ease-in-out ${
+                badgeExpanded ? 'max-w-[300px] opacity-100' : 'max-w-0 opacity-0'
+              }`}
+            >
+              We apologize, something went wrong
+            </span>
+          ) : (
+            <span
+              className="overflow-hidden inline-block"
+              style={{
+                width: badgeExpanded ? rotatingWidth : 0,
+                opacity: badgeExpanded ? 1 : 0,
+                transition: 'width 500ms ease-in-out, opacity 700ms ease-in-out',
+              }}
+            >
+              <span
+                ref={rotatingRef}
+                className={`text-xs text-muted-foreground whitespace-nowrap inline-block ${
+                  rotatingPhase === 'visible' ? 'slide-visible' : rotatingPhase === 'exiting' ? 'slide-out' : 'slide-in'
+                }`}
+              >
+                {rotatingText}
+              </span>
+            </span>
+          )}
         </div>
 
         {/* Play/Pause button */}
