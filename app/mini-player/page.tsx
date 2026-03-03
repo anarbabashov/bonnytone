@@ -23,48 +23,62 @@ export default function MiniPlayer() {
   const nowPlaying = usePlayerStore((s) => s.nowPlaying)
   const lastError = usePlayerStore((s) => s.lastError)
   const currentBitrate = usePlayerStore((s) => s.currentBitrate)
+  const stationDescription = usePlayerStore((s) => s.stationDescription)
   const setVolume = usePlayerStore((s) => s.setVolume)
 
-  // Badge only appears after user has clicked play at least once
-  const [hasPlayed, setHasPlayed] = useState(false)
-  useEffect(() => {
-    if (isPlaying && !hasPlayed) setHasPlayed(true)
-  }, [isPlaying, hasPlayed])
+  // Derive track metadata for display
+  const hasValidArtist = nowPlaying?.artist && nowPlaying.artist !== 'Unknown Artist'
+  const hasValidTitle = nowPlaying?.title && nowPlaying.title !== 'Unknown Track'
+  const hasValidMeta = !!(hasValidArtist && hasValidTitle)
+  const trackLabel = hasValidMeta ? `${nowPlaying!.artist} - ${nowPlaying!.title}` : null
+  const capitalizedLabel = trackLabel
+    ? trackLabel.replace(/\b\w/g, (c) => c.toUpperCase())
+    : null
 
-  // Badge expand animation: starts as a dot, expands to full pill after 1s
-  const [badgeExpanded, setBadgeExpanded] = useState(false)
-  const badgeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Badge expand animation
+  const [badgeLabelVisible, setBadgeLabelVisible] = useState(false)
+  const [badgeDetailsVisible, setBadgeDetailsVisible] = useState(false)
+  const labelTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const detailsTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [showPending, setShowPending] = useState(false)
   const pendingTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    if (!hasPlayed) return
-
-    if (badgeTimer.current) clearTimeout(badgeTimer.current)
+    if (labelTimer.current) clearTimeout(labelTimer.current)
+    if (detailsTimer.current) clearTimeout(detailsTimer.current)
     if (pendingTimer.current) clearTimeout(pendingTimer.current)
 
     if (streamStatus === 'live') {
       setShowPending(false)
-      setBadgeExpanded(false)
-      badgeTimer.current = setTimeout(() => setBadgeExpanded(true), 1000)
+      setBadgeLabelVisible(false)
+      setBadgeDetailsVisible(false)
+      labelTimer.current = setTimeout(() => setBadgeLabelVisible(true), 1000)
+      if (isPlaying) {
+        detailsTimer.current = setTimeout(() => setBadgeDetailsVisible(true), 2000)
+      }
     } else if (streamStatus === 'error') {
-      setBadgeExpanded(true)
+      setBadgeLabelVisible(true)
+      setBadgeDetailsVisible(true)
     } else if (streamStatus === 'connecting' || streamStatus === 'offline') {
-      setBadgeExpanded(false)
+      setBadgeLabelVisible(false)
+      setBadgeDetailsVisible(false)
       pendingTimer.current = setTimeout(() => {
         setShowPending(true)
-        setBadgeExpanded(true)
+        setBadgeLabelVisible(true)
+        if (isPlaying) setBadgeDetailsVisible(true)
       }, 1000)
     } else {
-      setBadgeExpanded(false)
+      setBadgeLabelVisible(false)
+      setBadgeDetailsVisible(false)
       setShowPending(false)
     }
 
     return () => {
-      if (badgeTimer.current) clearTimeout(badgeTimer.current)
+      if (labelTimer.current) clearTimeout(labelTimer.current)
+      if (detailsTimer.current) clearTimeout(detailsTimer.current)
       if (pendingTimer.current) clearTimeout(pendingTimer.current)
     }
-  }, [streamStatus, hasPlayed])
+  }, [streamStatus, isPlaying])
 
   // Dynamic document title
   useEffect(() => {
@@ -95,15 +109,19 @@ export default function MiniPlayer() {
 
   // Rotating text items for LIVE badge
   const rotatingItems = useMemo(() => {
-    if (isPlaying && currentBitrate) {
-      return [
-        { text: `${Math.round(currentBitrate / 1000)} kbps`, duration: 10000 },
-        { text: 'Main Stage', duration: 40000 },
-        { text: '24/7', duration: 10000 },
-      ]
+    const items: { text: string; duration: number }[] = []
+    if (capitalizedLabel) {
+      items.push({ text: capitalizedLabel, duration: 60000 })
     }
-    return [{ text: 'Main Stage', duration: 10000 }]
-  }, [isPlaying, currentBitrate])
+    if (stationDescription) {
+      items.push({ text: stationDescription, duration: 10000 })
+    }
+    if (isPlaying && currentBitrate) {
+      items.push({ text: `${Math.round(currentBitrate / 1000)}kbps`, duration: 10000 })
+    }
+    items.push({ text: '24/7', duration: 10000 })
+    return items
+  }, [isPlaying, currentBitrate, capitalizedLabel, stationDescription])
   const { text: rotatingText, phase: rotatingPhase, measureRef: rotatingRef, width: rotatingWidth } = useRotatingText(rotatingItems)
 
   // Lock scroll
@@ -116,11 +134,13 @@ export default function MiniPlayer() {
     }
   }, [])
 
-  const isDot = hasPlayed && (streamStatus === 'live' || streamStatus === 'error' || (showPending && (streamStatus === 'connecting' || streamStatus === 'offline')))
+  const isVisible = streamStatus === 'live' || streamStatus === 'error' || (showPending && (streamStatus === 'connecting' || streamStatus === 'offline'))
   const isError = streamStatus === 'error'
   const isPending = showPending && (streamStatus === 'connecting' || streamStatus === 'offline')
   const dotColor = isError ? 'bg-red-500' : isPending ? 'bg-orange-500' : 'bg-green-500'
   const pingColor = isError ? '' : isPending ? 'bg-orange-400' : 'bg-green-400'
+  const showLabel = badgeLabelVisible || badgeDetailsVisible
+  const showDetails = badgeDetailsVisible
 
   return (
     <div className="relative h-[100dvh] overflow-hidden flex flex-col">
@@ -166,8 +186,8 @@ export default function MiniPlayer() {
           role="status"
           aria-live="polite"
           className={`glass flex items-center justify-center rounded-full p-1.5 transition-all duration-700 ease-in-out ${
-            isDot ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          } ${badgeExpanded ? 'gap-2 px-3 py-1.5' : 'gap-0'}`}
+            isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          } ${showLabel ? 'gap-2 px-3 py-1.5' : 'gap-0'}`}
         >
           <span className="relative flex h-2 w-2 flex-shrink-0">
             {pingColor && (
@@ -178,14 +198,14 @@ export default function MiniPlayer() {
           <span
             className={`text-xs font-medium tracking-wide whitespace-nowrap overflow-hidden transition-all duration-700 ease-in-out ${
               isError ? 'text-red-400' : isPending ? 'text-orange-400' : 'text-foreground'
-            } ${badgeExpanded ? 'max-w-[200px] opacity-100' : 'max-w-0 opacity-0'}`}
+            } ${showLabel ? 'max-w-[200px] opacity-100' : 'max-w-0 opacity-0'}`}
           >
             {isError ? 'ERROR' : isPending ? 'PENDING' : 'LIVE'}
           </span>
           {isError ? (
             <span
               className={`text-xs text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-700 ease-in-out ${
-                badgeExpanded ? 'max-w-[300px] opacity-100' : 'max-w-0 opacity-0'
+                showDetails ? 'max-w-[300px] opacity-100' : 'max-w-0 opacity-0'
               }`}
             >
               {lastError || 'Stream unavailable'}
@@ -193,7 +213,7 @@ export default function MiniPlayer() {
           ) : isPending ? (
             <span
               className={`text-xs text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-700 ease-in-out ${
-                badgeExpanded ? 'max-w-[300px] opacity-100' : 'max-w-0 opacity-0'
+                showDetails ? 'max-w-[300px] opacity-100' : 'max-w-0 opacity-0'
               }`}
             >
               We apologize, something went wrong
@@ -202,8 +222,8 @@ export default function MiniPlayer() {
             <span
               className="overflow-hidden inline-block"
               style={{
-                width: badgeExpanded ? rotatingWidth : 0,
-                opacity: badgeExpanded ? 1 : 0,
+                width: showDetails ? rotatingWidth : 0,
+                opacity: showDetails ? 1 : 0,
                 transition: 'width 500ms ease-in-out, opacity 700ms ease-in-out',
               }}
             >
