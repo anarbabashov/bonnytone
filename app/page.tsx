@@ -22,54 +22,77 @@ export default function Home() {
   const volume = usePlayerStore((s) => s.volume)
   const isMuted = usePlayerStore((s) => s.isMuted)
   const streamStatus = usePlayerStore((s) => s.streamStatus)
+  const nowPlaying = usePlayerStore((s) => s.nowPlaying)
   const lastError = usePlayerStore((s) => s.lastError)
   const currentBitrate = usePlayerStore((s) => s.currentBitrate)
+  const stationDescription = usePlayerStore((s) => s.stationDescription)
   const setVolume = usePlayerStore((s) => s.setVolume)
   const toggleMute = usePlayerStore((s) => s.toggleMute)
 
-  // Badge only appears after user has clicked play at least once
+  // Derive track metadata for display
+  const hasValidArtist = nowPlaying?.artist && nowPlaying.artist !== 'Unknown Artist'
+  const hasValidTitle = nowPlaying?.title && nowPlaying.title !== 'Unknown Track'
+  const hasValidMeta = !!(hasValidArtist && hasValidTitle)
+  const trackLabel = hasValidMeta ? `${nowPlaying!.artist} - ${nowPlaying!.title}` : null
+  const capitalizedLabel = trackLabel
+    ? trackLabel.replace(/\b\w/g, (c) => c.toUpperCase())
+    : null
+
+  // Track whether user has clicked play at least once (enables rotating details)
   const [hasPlayed, setHasPlayed] = useState(false)
   useEffect(() => {
     if (isPlaying && !hasPlayed) setHasPlayed(true)
   }, [isPlaying, hasPlayed])
 
-  // Badge expand animation: starts as a dot, expands to full pill after 1s
-  const [badgeExpanded, setBadgeExpanded] = useState(false)
-  const badgeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Badge expand animation: starts as dot, expands to label after 1s, then details after play
+  const [badgeLabelVisible, setBadgeLabelVisible] = useState(false)
+  const [badgeDetailsVisible, setBadgeDetailsVisible] = useState(false)
+  const labelTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const detailsTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Debounce PENDING badge — only show after 1s in connecting/offline state
   const [showPending, setShowPending] = useState(false)
   const pendingTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    if (!hasPlayed) return
-
     // Clear previous timers
-    if (badgeTimer.current) clearTimeout(badgeTimer.current)
+    if (labelTimer.current) clearTimeout(labelTimer.current)
+    if (detailsTimer.current) clearTimeout(detailsTimer.current)
     if (pendingTimer.current) clearTimeout(pendingTimer.current)
 
     if (streamStatus === 'live') {
       setShowPending(false)
-      setBadgeExpanded(false)
-      badgeTimer.current = setTimeout(() => setBadgeExpanded(true), 1000)
+      setBadgeLabelVisible(false)
+      setBadgeDetailsVisible(false)
+      // Step 1: show LIVE label after 1s
+      labelTimer.current = setTimeout(() => setBadgeLabelVisible(true), 1000)
+      // Step 2: expand with rotating details after another 1s (only while playing)
+      if (isPlaying) {
+        detailsTimer.current = setTimeout(() => setBadgeDetailsVisible(true), 2000)
+      }
     } else if (streamStatus === 'error') {
-      setBadgeExpanded(true) // errors expand immediately
+      setBadgeLabelVisible(true)
+      setBadgeDetailsVisible(true)
     } else if (streamStatus === 'connecting' || streamStatus === 'offline') {
-      setBadgeExpanded(false)
+      setBadgeLabelVisible(false)
+      setBadgeDetailsVisible(false)
       pendingTimer.current = setTimeout(() => {
         setShowPending(true)
-        setBadgeExpanded(true)
+        setBadgeLabelVisible(true)
+        if (isPlaying) setBadgeDetailsVisible(true)
       }, 1000)
     } else {
-      setBadgeExpanded(false)
+      setBadgeLabelVisible(false)
+      setBadgeDetailsVisible(false)
       setShowPending(false)
     }
 
     return () => {
-      if (badgeTimer.current) clearTimeout(badgeTimer.current)
+      if (labelTimer.current) clearTimeout(labelTimer.current)
+      if (detailsTimer.current) clearTimeout(detailsTimer.current)
       if (pendingTimer.current) clearTimeout(pendingTimer.current)
     }
-  }, [streamStatus, hasPlayed])
+  }, [streamStatus, isPlaying])
 
   // Global keyboard shortcuts: Space = toggle play, M = toggle mute
   useEffect(() => {
@@ -90,15 +113,19 @@ export default function Home() {
 
   // Rotating text items for LIVE badge
   const rotatingItems = useMemo(() => {
-    if (isPlaying && currentBitrate) {
-      return [
-        { text: `${Math.round(currentBitrate / 1000)} kbps`, duration: 10000 },
-        { text: 'Main Stage', duration: 40000 },
-        { text: '24/7', duration: 10000 },
-      ]
+    const items: { text: string; duration: number }[] = []
+    if (capitalizedLabel) {
+      items.push({ text: capitalizedLabel, duration: 60000 })
     }
-    return [{ text: 'Main Stage', duration: 10000 }]
-  }, [isPlaying, currentBitrate])
+    if (stationDescription) {
+      items.push({ text: stationDescription, duration: 10000 })
+    }
+    if (isPlaying && currentBitrate) {
+      items.push({ text: `${Math.round(currentBitrate / 1000)}kbps`, duration: 10000 })
+    }
+    items.push({ text: '24/7', duration: 10000 })
+    return items
+  }, [isPlaying, currentBitrate, capitalizedLabel, stationDescription])
   const { text: rotatingText, phase: rotatingPhase, measureRef: rotatingRef, width: rotatingWidth } = useRotatingText(rotatingItems)
 
   // Lock scroll on homepage (Safari ignores overflow:hidden on child divs)
@@ -199,18 +226,20 @@ export default function Home() {
         {/* Stream status badge — absolute so it never shifts the play button */}
         <div className="relative w-full flex justify-center">
           {(() => {
-            const isVisible = hasPlayed && (streamStatus === 'live' || streamStatus === 'error' || (showPending && (streamStatus === 'connecting' || streamStatus === 'offline')))
+            const isVisible = streamStatus === 'live' || streamStatus === 'error' || (showPending && (streamStatus === 'connecting' || streamStatus === 'offline'))
             const isError = streamStatus === 'error'
             const isPending = showPending && (streamStatus === 'connecting' || streamStatus === 'offline')
             const dotColor = isError ? 'bg-red-500' : isPending ? 'bg-orange-500' : 'bg-green-500'
             const pingColor = isError ? '' : isPending ? 'bg-orange-400' : 'bg-green-400'
+            const showLabel = badgeLabelVisible || badgeDetailsVisible
+            const showDetails = badgeDetailsVisible
             return (
               <div
                 role="status"
                 aria-live="polite"
-                className={`absolute bottom-full mb-6 sm:mb-10 min-[1920px]:mb-14 glass flex items-center justify-center rounded-full p-2 transition-all duration-700 ease-in-out ${
+                className={`absolute bottom-full mb-6 sm:mb-4 min-[1920px]:mb-14 glass flex items-center justify-center rounded-full p-2 transition-all duration-700 ease-in-out ${
                   isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                } ${badgeExpanded ? 'gap-2 px-4' : 'gap-0'}`}
+                } ${showLabel ? 'gap-2 px-4' : 'gap-0'}`}
               >
                 <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
                   {pingColor && (
@@ -221,14 +250,14 @@ export default function Home() {
                 <span
                   className={`text-sm font-medium tracking-wide whitespace-nowrap overflow-hidden transition-all duration-700 ease-in-out ${
                     isError ? 'text-red-400' : isPending ? 'text-orange-400' : 'text-foreground'
-                  } ${badgeExpanded ? 'max-w-[200px] opacity-100' : 'max-w-0 opacity-0'}`}
+                  } ${showLabel ? 'max-w-[200px] opacity-100' : 'max-w-0 opacity-0'}`}
                 >
                   {isError ? 'ERROR' : isPending ? 'PENDING' : 'LIVE'}
                 </span>
                 {isError ? (
                   <span
                     className={`text-sm text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-700 ease-in-out ${
-                      badgeExpanded ? 'max-w-[300px] opacity-100' : 'max-w-0 opacity-0'
+                      showDetails ? 'max-w-[300px] opacity-100' : 'max-w-0 opacity-0'
                     }`}
                   >
                     {lastError || 'Stream unavailable'}
@@ -236,7 +265,7 @@ export default function Home() {
                 ) : isPending ? (
                   <span
                     className={`text-sm text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-700 ease-in-out ${
-                      badgeExpanded ? 'max-w-[300px] opacity-100' : 'max-w-0 opacity-0'
+                      showDetails ? 'max-w-[300px] opacity-100' : 'max-w-0 opacity-0'
                     }`}
                   >
                     We apologize, something went wrong
@@ -245,8 +274,8 @@ export default function Home() {
                   <span
                     className="overflow-hidden inline-block"
                     style={{
-                      width: badgeExpanded ? rotatingWidth : 0,
-                      opacity: badgeExpanded ? 1 : 0,
+                      width: showDetails ? rotatingWidth : 0,
+                      opacity: showDetails ? 1 : 0,
                       transition: 'width 500ms ease-in-out, opacity 700ms ease-in-out',
                     }}
                   >
@@ -271,6 +300,8 @@ export default function Home() {
           disabled={streamStatus === 'offline'}
           onToggle={togglePlay}
           theme={resolvedTheme}
+          coverArt={nowPlaying?.art}
+          hasValidMeta={hasValidMeta}
         />
         <ActionButtons
           isMuted={isMuted}
@@ -282,7 +313,10 @@ export default function Home() {
         {!isMobile && <VolumeSlider volume={volume} onChange={setVolume} />}
       </div>
 
-      <span className="fixed bottom-4 left-0 right-0 text-center text-xs text-muted-foreground/50">
+      <span
+        className="fixed bottom-4 left-0 right-0 text-center text-xs"
+        style={{ color: resolvedTheme === 'light' ? 'hsl(0 0% 1% / 50%)' : 'hsl(0 0% 99% / 50%)' }}
+      >
         &copy; {new Date().getFullYear()} BonnyTone Radio
       </span>
     </div>
