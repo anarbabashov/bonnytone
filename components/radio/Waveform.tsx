@@ -72,9 +72,9 @@ export default function Waveform({ isPlaying, volume, theme, analyserNode }: Wav
             const alpha = Math.min(waveOffset * intensity, 0.45)
             ctx.fillStyle = `hsla(${hue}, 55%, ${lightness}%, ${alpha})`
           } else {
-            const lightness = 40 + Math.sin(t * 0.1 + norm * 2) * 10
-            const alpha = waveOffset * intensity * 0.6
-            ctx.fillStyle = `hsla(${hue}, 55%, ${lightness}%, ${alpha})`
+            const lightness = 25 + Math.sin(t * 0.1 + norm * 2) * 8
+            const alpha = waveOffset * intensity * 2.0
+            ctx.fillStyle = `hsla(${hue}, 75%, ${lightness}%, ${alpha})`
           }
           ctx.fill()
         }
@@ -90,10 +90,10 @@ export default function Waveform({ isPlaying, volume, theme, analyserNode }: Wav
         const b = Math.round(12 + Math.sin(t * 0.1 + 2) * 8)
         ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.12)`
       } else {
-        const r = Math.round(245 + Math.sin(t * 0.08) * 8)
-        const g = Math.round(245 + Math.sin(t * 0.06 + 1) * 8)
-        const b = Math.round(248 + Math.sin(t * 0.1 + 2) * 6)
-        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.12)`
+        const r = Math.round(240 + Math.sin(t * 0.08) * 8)
+        const g = Math.round(240 + Math.sin(t * 0.06 + 1) * 8)
+        const b = Math.round(245 + Math.sin(t * 0.1 + 2) * 6)
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.08)`
       }
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
