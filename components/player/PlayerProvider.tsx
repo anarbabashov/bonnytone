@@ -8,6 +8,22 @@ import { useNowPlaying } from '@/hooks/useNowPlaying'
 
 const STREAM_URL = process.env.NEXT_PUBLIC_STREAM_URL || ''
 
+/** Resolve an art URL to an absolute URL safe for MediaMetadata */
+function resolveArtUrl(art: string | null | undefined): string | null {
+  if (!art) return null
+  try {
+    // If it's already a fully valid absolute URL, use it as-is
+    return new URL(art).href
+  } catch {
+    // Relative path — resolve against the current origin
+    try {
+      return new URL(art, window.location.origin).href
+    } catch {
+      return null
+    }
+  }
+}
+
 const HLS_CONFIG: Partial<Hls['config']> = {
   maxBufferLength: 30,
   maxMaxBufferLength: 60,
@@ -261,16 +277,29 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // Media Session API
+  // Media Session API — dynamic metadata from now-playing data
   useEffect(() => {
     if (!('mediaSession' in navigator)) return
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: 'BTRadio DJ',
-      artist: 'Live Stream',
+
+    const buildMetadata = (np: { title?: string; artist?: string; art?: string | null } | null) => {
+      const artSrc = resolveArtUrl(np?.art)
+      return new MediaMetadata({
+        title: np?.title || 'BTRadio DJ',
+        artist: np?.artist || 'Live Stream',
+        album: 'BTRadio',
+        artwork: artSrc ? [{ src: artSrc, sizes: '512x512', type: 'image/png' }] : [],
+      })
+    }
+
+    const unsub = usePlayerStore.subscribe((state) => {
+      navigator.mediaSession.metadata = buildMetadata(state.nowPlaying)
     })
+    // Set initial metadata
+    navigator.mediaSession.metadata = buildMetadata(usePlayerStore.getState().nowPlaying)
     navigator.mediaSession.setActionHandler('play', play)
     navigator.mediaSession.setActionHandler('pause', pause)
     return () => {
+      unsub()
       navigator.mediaSession.setActionHandler('play', null)
       navigator.mediaSession.setActionHandler('pause', null)
     }
