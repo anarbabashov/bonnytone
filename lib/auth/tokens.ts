@@ -2,11 +2,17 @@ import { prisma } from '../prisma'
 import { createSecureToken } from './crypto'
 import { createHmac } from 'crypto'
 
-const TOKEN_HMAC_SECRET = process.env.TOKEN_HMAC_SECRET || 'fallback-secret'
+function getTokenHmacSecret(): string {
+  const secret = process.env.TOKEN_HMAC_SECRET
+  if (!secret) {
+    throw new Error('TOKEN_HMAC_SECRET environment variable is required')
+  }
+  return secret
+}
 
 // Create HMAC of token for secure storage (per security contracts)
 function createTokenHmac(token: string): string {
-  return createHmac('sha256', TOKEN_HMAC_SECRET).update(token).digest('hex')
+  return createHmac('sha256', getTokenHmacSecret()).update(token).digest('hex')
 }
 
 export type TokenType = 'verify_email' | 'password_reset' | 'change_email'

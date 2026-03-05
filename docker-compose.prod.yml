@@ -14,6 +14,7 @@ services:
       - NEXT_PUBLIC_STREAM_URL=/stream/hls/btradio/live.m3u8
       - NEXT_PUBLIC_AZURACAST_API_URL=/api/azuracast/nowplaying/btradio
       - AZURACAST_ORIGIN=http://azuracast:80
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
     networks:
       - btradio
 

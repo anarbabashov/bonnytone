@@ -2,6 +2,10 @@
 # Main
 .env
 
+# Personal/sensitive docs
+docs/partnership-letter.md
+.mailbox/
+
 # dependencies
 /node_modules
 /.pnp

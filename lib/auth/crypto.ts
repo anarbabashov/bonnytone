@@ -58,7 +58,10 @@ export function randomToken(bytes: number = 32): string {
 
 // HMAC token hashing for secure storage
 export function hmacTokenHash(token: string, secret?: string): string {
-  const secretKey = secret || process.env.TOKEN_HMAC_SECRET || 'default-secret'
+  const secretKey = secret || process.env.TOKEN_HMAC_SECRET
+  if (!secretKey) {
+    throw new Error('TOKEN_HMAC_SECRET environment variable is required')
+  }
   return createHmac('sha256', secretKey).update(token).digest('hex')
 }
 

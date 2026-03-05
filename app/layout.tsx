@@ -9,7 +9,7 @@ import PersistentBottomBar from "@/components/player/PersistentBottomBar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://bonnytone.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
   title: "BonnyTone Radio — Miami Club & House Music Internet Radio",
   description:
     "Stream Miami's club music internet radio 24/7 — house, deep house, tech house, breaks, progressive & electronic music. Tune in to BonnyTone Radio for the perfect vibe.",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://bonnytone.com",
+    url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
     siteName: "BonnyTone Radio",
     title: "BonnyTone Radio — Miami Club & House Music Internet Radio",
     description:
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     images: ["/og-image.png"],
   },
   alternates: {
-    canonical: "https://bonnytone.com",
+    canonical: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   },
   other: {
     "geo.region": "US-FL",

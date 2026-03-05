@@ -24,7 +24,11 @@ async function initializeJwtKeys() {
     JWT_PUBLIC_KEY = await importSPKI(publicKeyPem, JWT_ALGORITHM)
   } else {
     // HS512 fallback
-    JWT_SECRET = new TextEncoder().encode(process.env.TOKEN_HMAC_SECRET || 'fallback-secret')
+    const secret = process.env.TOKEN_HMAC_SECRET
+    if (!secret) {
+      throw new Error('TOKEN_HMAC_SECRET environment variable is required')
+    }
+    JWT_SECRET = new TextEncoder().encode(secret)
   }
 }
 

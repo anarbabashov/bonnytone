@@ -44,13 +44,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // User is not authenticated - this is expected and normal
         setUser(null)
       } else {
-        // Other errors (500, etc.) - log these as they indicate real issues
-        console.error(`Auth check failed with status ${response.status}`)
+        // Other errors (500, no DB, etc.) — assume not authenticated
         setUser(null)
       }
-    } catch (error) {
-      // Network errors or other connection issues - assume not authenticated
-      console.error('Auth check network error:', error)
+    } catch {
+      // Network errors or auth not configured — silently assume not authenticated
       setUser(null)
     } finally {
       setLoading(false)
