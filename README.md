@@ -10,9 +10,13 @@ Online radio platform streaming Miami club & house music 24/7. Built with Next.j
 - Glass-morphism UI with dark/light theme support
 - HLS adaptive streaming with automatic reconnection (exponential backoff)
 - Safari native HLS fallback
+- Now-playing metadata with artist info, cover art, and labels
+- Stream quality selector and live stream status indicator
 - Persistent mini-player bottom bar on non-homepage routes
-- Now-playing metadata polling from AzuraCast API
+- Dedicated mini-player page (`/mini-player`)
 - Media Session API integration (OS-level play/pause controls)
+- Mobile platform detection for platform-specific UX
+- SEO optimized with sitemap and robots.txt
 - User accounts with email verification, password reset, email change
 - TOTP-based two-factor authentication
 - Rate limiting with escalating login backoff
@@ -33,7 +37,7 @@ Online radio platform streaming Miami club & house music 24/7. Built with Next.j
 The radio player works without the auth stack — no database or Redis needed.
 
 ```bash
-git clone https://github.com/your-username/btradio.git && cd btradio
+git clone https://github.com/anarbabashov/bonnytone.git && cd bonnytone
 npm install
 cp .env.example .env.local
 npm run dev
@@ -65,18 +69,25 @@ See `.env.example` for all configuration options.
 app/
   page.tsx              # Full-screen radio player homepage
   layout.tsx            # Root layout (ThemeProvider, AuthProvider, PlayerProvider)
+  mini-player/          # Dedicated mini-player page
   auth/                 # Login, register, verify-email, forgot/reset-password pages
+  robots.ts             # SEO robots.txt generation
+  sitemap.ts            # SEO sitemap generation
   api/
     auth/               # Auth endpoints (login, register, refresh, logout, etc.)
     account/            # Account management (change password/email, MFA setup)
+    monitoring/         # Health, metrics, alerts
 components/
   player/               # PlayerProvider (audio engine), PersistentBottomBar
-  radio/                # Waveform, GlassPlayButton, VolumeSlider, ActionButtons
-  layout/               # AuthButtons, ThemeToggle, ThemeProvider
+  radio/                # Waveform, GlassPlayButton, VolumeSlider, ActionButtons,
+                        # NowPlayingBar, QualitySelector, StreamStatus
+  layout/               # AuthButtons, Header, ThemeToggle, ThemeProvider, Sidebar
   ui/                   # shadcn/ui components
 hooks/
   usePlayer.ts          # Thin context consumer for PlayerProvider
   useNowPlaying.ts      # AzuraCast now-playing metadata polling
+  useMobilePlatform.ts  # Mobile platform detection (iOS/Android)
+  useRotatingText.ts    # Rotating text animation utility
 store/
   playerStore.ts        # Zustand store (playback, volume, stream status, now-playing)
 lib/
