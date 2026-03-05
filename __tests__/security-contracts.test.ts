@@ -389,24 +389,24 @@ describe('🔒 Security Contracts - Step by Step Verification', () => {
   describe('STEP 7: ✅ MFA and TOTP Security Features', () => {
     test('TOTP configuration and validation', async () => {
       try {
-        const { generateMfaSecret, verifyTotpCode, generateTotpCode } = await import('../lib/auth/mfa')
-        
+        const { generateMFASecret, verifyTOTPCode, generateTOTPCode } = await import('../lib/auth/mfa')
+
         // Generate MFA secret
-        const secret = generateMfaSecret()
+        const secret = generateMFASecret()
         expect(secret).toBeDefined()
         expect(secret.length).toBeGreaterThan(0)
-        
+
         // Generate TOTP code
-        const code = generateTotpCode(secret)
+        const code = generateTOTPCode(secret)
         expect(code).toMatch(/^\d{6}$/) // 6-digit code
-        
+
         // Verify TOTP code
-        const isValid = verifyTotpCode(secret, code)
+        const isValid = verifyTOTPCode(secret, code)
         expect(isValid).toBe(true)
-        
+
         // Verify invalid code
         const invalidCode = '000000'
-        const isInvalid = verifyTotpCode(secret, invalidCode)
+        const isInvalid = verifyTOTPCode(secret, invalidCode)
         expect(isInvalid).toBe(false)
         
         console.log('✅ TOTP MFA functionality verified')

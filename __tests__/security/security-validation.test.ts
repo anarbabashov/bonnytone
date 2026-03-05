@@ -6,22 +6,22 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { 
-  setAccessTokenCookie, 
-  setRefreshTokenCookie, 
-  setSessionCookie, 
+import {
+  setAccessTokenCookie,
+  setRefreshTokenCookie,
+  setSessionCookie,
   clearAuthCookies,
-  getAccessTokenFromCookies,
-  getRefreshTokenFromCookies,
-  getSessionIdFromCookies,
+  getAccessTokenFromRequest,
+  getRefreshTokenFromRequest,
+  getSessionIdFromRequest,
 } from '@/lib/auth/cookies'
-import { 
-  issueAccessJwt, 
-  issueRefreshJwt, 
-  verifyAccessJwt, 
-  verifyRefreshJwt 
+import {
+  issueAccessJwt,
+  createRefreshToken,
+  verifyAccessJwt,
+  verifyRefreshToken
 } from '@/lib/auth/jwt'
-import { createSession, rotateRefreshToken } from '@/lib/auth/session'
+import { createSession, refreshAccessToken } from '@/lib/auth/session'
 import jwt from 'jsonwebtoken'
 
 // Mock environment for security tests
@@ -49,8 +49,8 @@ describe('Cookie Security', () => {
   })
 
   test('should set secure cookie flags in production', () => {
-    const originalEnv = process.env.NODE_ENV
-    process.env.NODE_ENV = 'production'
+    const originalEnv = process.env.NODE_ENV;
+    (process.env as any).NODE_ENV = 'production'
 
     setAccessTokenCookie(mockResponse, 'test-access-token')
     setRefreshTokenCookie(mockResponse, 'test-refresh-token')
@@ -62,14 +62,14 @@ describe('Cookie Security', () => {
       expect(cookie).toMatch(/Secure/)
       expect(cookie).toMatch(/HttpOnly/)
       expect(cookie).toMatch(/SameSite=Lax/)
-    })
+    });
 
-    process.env.NODE_ENV = originalEnv
+    (process.env as any).NODE_ENV = originalEnv
   })
 
   test('should not set Secure flag in development', () => {
-    const originalEnv = process.env.NODE_ENV
-    process.env.NODE_ENV = 'development'
+    const originalEnv = process.env.NODE_ENV;
+    (process.env as any).NODE_ENV = 'development'
 
     setAccessTokenCookie(mockResponse, 'test-access-token')
     
@@ -79,16 +79,16 @@ describe('Cookie Security', () => {
     expect(accessCookie).toBeDefined()
     expect(accessCookie).not.toMatch(/Secure/)
     expect(accessCookie).toMatch(/HttpOnly/)
-    expect(accessCookie).toMatch(/SameSite=Lax/)
+    expect(accessCookie).toMatch(/SameSite=Lax/);
 
-    process.env.NODE_ENV = originalEnv
+    (process.env as any).NODE_ENV = originalEnv
   })
 
   test('should use correct cookie domain in production', () => {
     const originalEnv = process.env.NODE_ENV
-    const originalDomain = process.env.COOKIE_DOMAIN
-    
-    process.env.NODE_ENV = 'production'
+    const originalDomain = process.env.COOKIE_DOMAIN;
+
+    (process.env as any).NODE_ENV = 'production'
     process.env.COOKIE_DOMAIN = '.production-domain.com'
 
     setAccessTokenCookie(mockResponse, 'test-access-token')
@@ -96,9 +96,9 @@ describe('Cookie Security', () => {
     const setCookieHeaders = mockResponse.headers.getSetCookie()
     const accessCookie = setCookieHeaders.find(cookie => cookie.includes('access_token'))
 
-    expect(accessCookie).toMatch(/Domain=\.production-domain\.com/)
+    expect(accessCookie).toMatch(/Domain=\.production-domain\.com/);
 
-    process.env.NODE_ENV = originalEnv
+    (process.env as any).NODE_ENV = originalEnv
     process.env.COOKIE_DOMAIN = originalDomain
   })
 
@@ -137,9 +137,9 @@ describe('Cookie Security', () => {
       },
     })
 
-    expect(getAccessTokenFromCookies(request)).toBe('test-access')
-    expect(getRefreshTokenFromCookies(request)).toBe('test-refresh')
-    expect(getSessionIdFromCookies(request)).toBe('test-session')
+    expect(getAccessTokenFromRequest(request)).toBe('test-access')
+    expect(getRefreshTokenFromRequest(request)).toBe('test-refresh')
+    expect(getSessionIdFromRequest(request)).toBe('test-session')
   })
 
   test('should handle missing cookies gracefully', () => {
@@ -147,9 +147,9 @@ describe('Cookie Security', () => {
       headers: { 'cookie': 'other=value' },
     })
 
-    expect(getAccessTokenFromCookies(request)).toBeNull()
-    expect(getRefreshTokenFromCookies(request)).toBeNull()
-    expect(getSessionIdFromCookies(request)).toBeNull()
+    expect(getAccessTokenFromRequest(request)).toBeNull()
+    expect(getRefreshTokenFromRequest(request)).toBeNull()
+    expect(getSessionIdFromRequest(request)).toBeNull()
   })
 
   test('should handle malformed cookie header', () => {
@@ -157,9 +157,9 @@ describe('Cookie Security', () => {
       headers: { 'cookie': 'malformed-cookie-string' },
     })
 
-    expect(getAccessTokenFromCookies(request)).toBeNull()
-    expect(getRefreshTokenFromCookies(request)).toBeNull()
-    expect(getSessionIdFromCookies(request)).toBeNull()
+    expect(getAccessTokenFromRequest(request)).toBeNull()
+    expect(getRefreshTokenFromRequest(request)).toBeNull()
+    expect(getSessionIdFromRequest(request)).toBeNull()
   })
 })
 
@@ -407,7 +407,7 @@ describe('Session Security', () => {
     prisma.refreshToken.updateMany.mockResolvedValue({ count: 3 })
     prisma.session.update.mockResolvedValue({})
 
-    const result = await rotateRefreshToken('refresh_123')
+    const result = await refreshAccessToken('refresh_123')
     
     expect(result).toBeNull()
     
@@ -548,8 +548,8 @@ describe('Algorithm Confusion Prevention', () => {
 
 describe('Environment-Specific Security', () => {
   test('should use secure settings in production', () => {
-    const originalEnv = process.env.NODE_ENV
-    process.env.NODE_ENV = 'production'
+    const originalEnv = process.env.NODE_ENV;
+    (process.env as any).NODE_ENV = 'production'
 
     const response = NextResponse.json({})
     setAccessTokenCookie(response, 'test-token')
@@ -559,9 +559,9 @@ describe('Environment-Specific Security', () => {
 
     expect(cookie).toMatch(/Secure/)
     expect(cookie).toMatch(/HttpOnly/)
-    expect(cookie).toMatch(/SameSite=Lax/)
+    expect(cookie).toMatch(/SameSite=Lax/);
 
-    process.env.NODE_ENV = originalEnv
+    (process.env as any).NODE_ENV = originalEnv
   })
 
   test('should handle missing environment variables securely', () => {

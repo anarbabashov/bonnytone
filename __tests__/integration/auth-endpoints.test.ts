@@ -92,19 +92,19 @@ const { sendEmail } = require('@/lib/auth/email')
 // Helper to create NextRequest
 function createRequest(method: string, body?: any, headers: Record<string, string> = {}) {
   const url = 'http://localhost:3000/api/auth/test'
-  const options: RequestInit = {
+  const options: Record<string, unknown> = {
     method,
     headers: {
       'Content-Type': 'application/json',
       ...headers,
     },
   }
-  
+
   if (body) {
     options.body = JSON.stringify(body)
   }
-  
-  return new NextRequest(url, options)
+
+  return new NextRequest(url, options as any)
 }
 
 // Helper to extract JSON from Response

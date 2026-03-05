@@ -98,7 +98,7 @@ describe('PlayerProvider', () => {
     mockHlsAttachMedia.mockClear()
     mockHlsRecoverMediaError.mockClear()
     mockHlsOn.mockClear()
-    ;(Hls as jest.Mock).mockClear()
+    ;(Hls as unknown as jest.Mock).mockClear()
     // Set up Audio constructor
     global.Audio = jest.fn().mockImplementation(() => createMockAudio()) as any
   })
@@ -417,7 +417,7 @@ describe('PlayerProvider', () => {
       renderProvider()
       act(() => { contextValue!.play() })
 
-      const hlsResults = (Hls as jest.Mock).mock.results
+      const hlsResults = (Hls as unknown as jest.Mock).mock.results
       const hlsInstance = hlsResults[hlsResults.length - 1]?.value
       expect(hlsInstance).toBeTruthy()
 

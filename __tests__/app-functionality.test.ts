@@ -242,7 +242,7 @@ describe('Bonny Tone Radio - Comprehensive Tests', () => {
       try {
         const observability = await import('../lib/observability')
         expect(observability.logAuthEvent).toBeDefined()
-        expect(observability.emitMetric).toBeDefined()
+        expect(observability.createAuditLog).toBeDefined()
         
         const metrics = await import('../lib/observability/metrics')
         expect(metrics.authMetrics).toBeDefined()

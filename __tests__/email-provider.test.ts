@@ -19,7 +19,7 @@ describe('📧 Email Provider Abstraction - Step by Step Tests', () => {
   // STEP 1: Template Type Definitions
   describe('STEP 1: ✅ Template Type Definitions', () => {
     test('TemplateId type includes all required template types', async () => {
-      const { TemplateId } = await import('../lib/auth/email')
+      const email = await import('../lib/auth/email')
       
       // Test that all required template types are supported
       const requiredTemplates: TemplateId[] = [
@@ -199,7 +199,7 @@ describe('📧 Email Provider Abstraction - Step by Step Tests', () => {
           console.log('⚠️ verify_email EML file test skipped (file system)')
         }
       } catch (error) {
-        console.log('⚠️ verify_email template test skipped:', error.message)
+        console.log('⚠️ verify_email template test skipped:', (error as Error).message)
       } finally {
         process.env.EMAIL_PROVIDER = originalEnv
       }
@@ -329,7 +329,7 @@ describe('📧 Email Provider Abstraction - Step by Step Tests', () => {
 
         console.log('✅ Dev transport creates .eml files with correct naming')
       } catch (error) {
-        console.log('⚠️ Dev transport test skipped:', error.message)
+        console.log('⚠️ Dev transport test skipped:', (error as Error).message)
       }
     })
 
@@ -400,19 +400,19 @@ describe('📧 Email Provider Abstraction - Step by Step Tests', () => {
   describe('STEP 6: ✅ Dev Mailbox Preview API', () => {
     test('Mailbox API route exists and is accessible in development', async () => {
       // Simulate development environment
-      const originalEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'development'
+      const originalEnv = process.env.NODE_ENV;
+      (process.env as any).NODE_ENV = 'development'
 
       try {
         // Test that the API route file exists
-        const apiPath = path.join(process.cwd(), 'app', 'api', '__mailbox', 'route.ts')
+        const apiPath = path.join(process.cwd(), 'app', 'api', 'mailbox', 'route.ts')
         const routeExists = await fs.access(apiPath).then(() => true).catch(() => false)
         expect(routeExists).toBe(true)
 
-        console.log('✅ Mailbox API route exists at /api/__mailbox')
+        console.log('✅ Mailbox API route exists at /api/mailbox')
       } finally {
         if (originalEnv) {
-          process.env.NODE_ENV = originalEnv
+          (process.env as any).NODE_ENV = originalEnv
         }
       }
     })
@@ -449,15 +449,15 @@ describe('📧 Email Provider Abstraction - Step by Step Tests', () => {
         await fs.writeFile(testFilepath, sampleEml)
 
         // Import and test the API route parsing logic
-        const { default: mailboxRoute } = await import('../app/api/__mailbox/route')
-        
+        const { GET: mailboxRoute } = await import('../app/api/mailbox/route')
+
         expect(mailboxRoute).toBeDefined()
         console.log('✅ Mailbox API route imports successfully')
 
         // Clean up test file
         await fs.unlink(testFilepath).catch(() => {})
       } catch (error) {
-        console.log('⚠️ Mailbox API parsing test skipped:', error.message)
+        console.log('⚠️ Mailbox API parsing test skipped:', (error as Error).message)
         // Clean up test file on error
         await fs.unlink(testFilepath).catch(() => {})
       }
@@ -466,15 +466,15 @@ describe('📧 Email Provider Abstraction - Step by Step Tests', () => {
     test('Mailbox API provides email listing functionality', () => {
       // Test the API functionality conceptually
       const expectedApiFeatures = {
-        listEmails: 'GET /api/__mailbox - returns list of emails',
-        viewEmail: 'GET /api/__mailbox?file=filename - returns email content', 
-        deleteEmail: 'DELETE /api/__mailbox?file=filename - deletes email',
-        clearAll: 'DELETE /api/__mailbox - clears all emails'
+        listEmails: 'GET /api/mailbox - returns list of emails',
+        viewEmail: 'GET /api/mailbox?file=filename - returns email content', 
+        deleteEmail: 'DELETE /api/mailbox?file=filename - deletes email',
+        clearAll: 'DELETE /api/mailbox - clears all emails'
       }
 
       Object.entries(expectedApiFeatures).forEach(([feature, description]) => {
         expect(typeof feature).toBe('string')
-        expect(description).toContain('/api/__mailbox')
+        expect(description).toContain('/api/mailbox')
       })
 
       console.log('✅ Mailbox API provides required functionality:', Object.keys(expectedApiFeatures).join(', '))

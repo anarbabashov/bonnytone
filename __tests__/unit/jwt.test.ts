@@ -9,9 +9,8 @@ import {
   createAccessToken,
   createRefreshToken,
   issueAccessJwt,
-  issueRefreshJwt,
   verifyAccessJwt,
-  verifyRefreshJwt,
+  verifyRefreshToken,
   getRefreshTokenExpiry,
   AccessTokenPayload,
   RefreshTokenPayload,
@@ -118,7 +117,7 @@ describe('JWT Token Verification', () => {
 
   test('should verify valid refresh token', async () => {
     const token = await createRefreshToken(userId, refreshTokenId, sessionId)
-    const payload = await verifyRefreshJwt(token)
+    const payload = await verifyRefreshToken(token)
     
     expect(payload).toBeDefined()
     expect(payload!.sub).toBe(userId)
@@ -221,12 +220,12 @@ describe('JWT Security Contracts', () => {
     // Standard JWT claims
     expect(payload!.iat).toBeDefined() // Issued at
     expect(payload!.exp).toBeDefined() // Expires at
-    expect(payload!.exp).toBeGreaterThan(payload!.iat)
+    expect(payload!.exp).toBeGreaterThan(payload!.iat!)
   })
 
   test('refresh token should have all required claims', async () => {
     const token = await createRefreshToken(userId, 'refresh_123', sessionId)
-    const payload = await verifyRefreshJwt(token)
+    const payload = await verifyRefreshToken(token)
     
     expect(payload).toBeDefined()
     
@@ -241,7 +240,7 @@ describe('JWT Security Contracts', () => {
     // Standard JWT claims
     expect(payload!.iat).toBeDefined() // Issued at
     expect(payload!.exp).toBeDefined() // Expires at
-    expect(payload!.exp).toBeGreaterThan(payload!.iat)
+    expect(payload!.exp).toBeGreaterThan(payload!.iat!)
   })
 
   test('should validate issuer matches environment', async () => {

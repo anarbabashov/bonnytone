@@ -8,17 +8,19 @@
 import {
   LoginDto,
   RegisterDto,
-  ForgotPasswordDto,
-  ResetPasswordDto,
+  ForgotDto as ForgotPasswordDto,
+  ResetDto as ResetPasswordDto,
   ChangePasswordDto,
   ChangeEmailInitDto,
   ChangeEmailConfirmDto,
-  ResendVerificationDto,
   MfaSetupDto,
   MfaConfirmDto,
-  MfaDisableDto,
-  VerifyEmailDto,
+  VerifyDto as VerifyEmailDto,
 } from '@/lib/zod'
+
+// These DTOs were removed — alias to equivalent schemas for test compatibility
+const MfaDisableDto = MfaSetupDto // Same shape: password + code
+const ResendVerificationDto = ForgotPasswordDto // Same shape: { email }
 
 describe('LoginDto Validation', () => {
   test('should validate correct login data', () => {

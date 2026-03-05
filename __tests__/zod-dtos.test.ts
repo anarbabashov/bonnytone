@@ -677,9 +677,9 @@ describe('📝 Zod DTOs - Step by Step Validation', () => {
 describe('🔷 TypeScript Compile-Time Type Tests', () => {
   test('Type inference works correctly', () => {
     // These should compile without errors
-    type RegisterType = typeof RegisterDto._type
-    type LoginType = typeof LoginDto._type
-    type ForgotType = typeof ForgotDto._type
+    type RegisterType = typeof RegisterDto.type
+    type LoginType = typeof LoginDto.type
+    type ForgotType = typeof ForgotDto.type
     
     expect(true).toBe(true)
     

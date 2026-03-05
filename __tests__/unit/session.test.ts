@@ -5,14 +5,14 @@
  * and the security mechanisms around refresh tokens.
  */
 
-import { 
-  createSession, 
-  rotateRefreshToken, 
+import {
+  createSession,
+  refreshAccessToken as rotateRefreshToken,
   revokeSession,
-  SessionInfo 
+  SessionInfo
 } from '@/lib/auth/session'
 import { prisma } from '@/lib/prisma'
-import { verifyAccessJwt, verifyRefreshJwt } from '@/lib/auth/jwt'
+import { verifyAccessJwt, verifyRefreshToken } from '@/lib/auth/jwt'
 
 // Mock Prisma for unit testing
 jest.mock('@/lib/prisma', () => ({
@@ -47,7 +47,7 @@ jest.mock('@/lib/observability/metrics', () => ({
   },
 }))
 
-const mockPrisma = prisma as jest.Mocked<typeof prisma>
+const mockPrisma = prisma as any
 
 describe('Session Creation', () => {
   const userId = 'user_123'
@@ -95,7 +95,7 @@ describe('Session Creation', () => {
 
     // Verify tokens are valid
     const accessPayload = await verifyAccessJwt(sessionInfo.accessToken)
-    const refreshPayload = await verifyRefreshJwt(sessionInfo.refreshToken)
+    const refreshPayload = await verifyRefreshToken(sessionInfo.refreshToken)
 
     expect(accessPayload).toBeDefined()
     expect(accessPayload!.sub).toBe(userId)
@@ -241,7 +241,7 @@ describe('Token Rotation', () => {
 
     // Verify new tokens are valid
     const accessPayload = await verifyAccessJwt(tokens!.accessToken)
-    const refreshPayload = await verifyRefreshJwt(tokens!.refreshToken)
+    const refreshPayload = await verifyRefreshToken(tokens!.refreshToken)
 
     expect(accessPayload!.sub).toBe(userId)
     expect(refreshPayload!.sub).toBe(userId)
