@@ -307,7 +307,6 @@ export default function Home() {
           isMuted={isMuted}
           onToggleMute={toggleMute}
           onPopOut={handlePopOut}
-          onMore={() => {}}
           hideMute={isMobile}
         />
         {!isMobile && <VolumeSlider volume={volume} onChange={setVolume} />}
