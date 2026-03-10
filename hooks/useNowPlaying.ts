@@ -50,7 +50,6 @@ export function useNowPlaying(): NowPlayingInfo | null {
       }
 
       const data = await res.json()
-      console.log('[useNowPlaying] AzuraCast response:', data)
 
       const song = data?.now_playing?.song
       const listeners = data?.listeners?.current ?? data?.listeners?.total ?? 0
