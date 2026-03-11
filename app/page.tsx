@@ -1,5 +1,6 @@
 'use client'
 
+import Link from "next/link"
 import { useEffect, useState, useRef, useMemo } from "react"
 import { useTheme } from "next-themes"
 import { usePlayerStore } from "@/store/playerStore"
@@ -313,10 +314,12 @@ export default function Home() {
       </div>
 
       <span
-        className="fixed bottom-4 left-0 right-0 text-center text-xs"
+        className="fixed bottom-4 left-0 right-0 text-center text-xs flex items-center justify-center gap-1"
         style={{ color: resolvedTheme === 'light' ? 'hsl(0 0% 1% / 50%)' : 'hsl(0 0% 99% / 50%)' }}
       >
-        &copy; {new Date().getFullYear()} BonnyTone Radio
+        &copy; {new Date().getFullYear()} BonnyTone Radio DJ
+        <Link href="/terms" className="hover:opacity-80">terms</Link>
+        <Link href="/contact" className="hover:opacity-80">contact</Link>
       </span>
     </div>
   )
