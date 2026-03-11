@@ -3,14 +3,12 @@
 import { usePathname } from 'next/navigation'
 import { usePlayerStore } from '@/store/playerStore'
 import { usePlayer } from '@/hooks/usePlayer'
-import { useAuth } from '@/lib/auth/AuthContext'
 import { useMobilePlatform } from '@/hooks/useMobilePlatform'
 import { Play, Pause, Volume, Volume2, VolumeX } from 'lucide-react'
 
 export default function PersistentBottomBar() {
   const pathname = usePathname()
   const { togglePlay } = usePlayer()
-  const { isAuthenticated } = useAuth()
   const isMobile = useMobilePlatform()
 
   const isPlaying = usePlayerStore((s) => s.isPlaying)
@@ -42,7 +40,7 @@ export default function PersistentBottomBar() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 h-16 glass border-t border-border/50">
-      <div className="flex items-center h-full px-4 gap-4 max-w-[960px] mx-auto">
+      <div className="flex items-center h-full px-4 gap-4 max-w-[900px] mx-auto">
         {/* Play/Pause */}
         <button
           onClick={togglePlay}
@@ -61,32 +59,17 @@ export default function PersistentBottomBar() {
 
         {/* Now Playing Info — track details only for logged-in users */}
         <div className="flex-1 min-w-0 flex items-center gap-3">
-          {isAuthenticated ? (
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">
-                {nowPlaying?.title || 'BTRadio DJ'}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {nowPlaying?.artist || 'Live Stream'}
-              </p>
-            </div>
-          ) : (
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">BTRadio DJ</p>
-              <p className="text-xs text-muted-foreground truncate flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${statusDot}`} />
-                {streamStatus === 'live' ? 'Live Stream' : streamStatus}
-              </p>
-            </div>
-          )}
-          {isAuthenticated && (
-            <div className="flex items-center gap-1.5 flex-shrink-0">
-              <span className={`w-2 h-2 rounded-full ${statusDot}`} />
-              <span className="text-xs text-muted-foreground uppercase tracking-wide hidden sm:inline">
-                {streamStatus === 'live' ? 'LIVE' : streamStatus}
-              </span>
-            </div>
-          )}
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-foreground truncate">
+              {nowPlaying?.artist && nowPlaying?.title
+                ? `${nowPlaying.artist} — ${nowPlaying.title}`
+                : 'BTRadio DJ'}
+            </p>
+            <p className="text-xs text-muted-foreground truncate flex items-center gap-1.5">
+              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${statusDot}`} />
+              {streamStatus === 'live' ? 'Live Stream' : streamStatus}
+            </p>
+          </div>
         </div>
 
         {/* Volume — hidden on mobile (iOS/Android control volume via hardware) */}
