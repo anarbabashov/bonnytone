@@ -5,6 +5,7 @@ import { AuthProvider } from "@/lib/auth/AuthContext";
 import ThemeProvider from "@/components/layout/ThemeProvider/ThemeProvider";
 import { PlayerProvider } from "@/components/player/PlayerProvider";
 import PersistentBottomBar from "@/components/player/PersistentBottomBar";
+import CookieConsent from "@/components/gdpr/CookieConsent";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -97,6 +98,7 @@ export default function RootLayout({
             <PlayerProvider>
               <main id="main-content" className="pb-16">{children}</main>
               <PersistentBottomBar />
+              <CookieConsent />
             </PlayerProvider>
           </AuthProvider>
         </ThemeProvider>
