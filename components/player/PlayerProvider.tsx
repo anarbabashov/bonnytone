@@ -68,6 +68,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reconnectAttempts = useRef(0)
 
+  // Hydrate persisted volume from localStorage (avoids SSR mismatch)
+  useEffect(() => {
+    usePlayerStore.getState().hydrateVolume()
+  }, [])
+
   // Run now-playing polling globally
   useNowPlaying()
 

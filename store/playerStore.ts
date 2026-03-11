@@ -1,5 +1,13 @@
 import { create } from 'zustand'
 
+const VOLUME_KEY = 'btradio-volume'
+
+function saveVolume(volume: number, isMuted: boolean, previousVolume: number) {
+  try {
+    localStorage.setItem(VOLUME_KEY, JSON.stringify({ volume, isMuted, previousVolume }))
+  } catch { /* ignore */ }
+}
+
 export type Quality = 'auto' | 'low' | 'medium' | 'high'
 export type StreamStatus = 'idle' | 'connecting' | 'live' | 'offline' | 'error'
 
@@ -80,6 +88,7 @@ export interface PlayerState {
   setError: (error: string | null) => void
   incrementErrorCount: () => void
   resetErrorCount: () => void
+  hydrateVolume: () => void
 }
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
@@ -109,19 +118,20 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
   setVolume: (volume: number) => {
     const clamped = Math.max(0, Math.min(1, volume))
-    set({
-      volume: clamped,
-      isMuted: clamped === 0,
-      previousVolume: clamped > 0 ? clamped : get().previousVolume,
-    })
+    const prev = clamped > 0 ? clamped : get().previousVolume
+    set({ volume: clamped, isMuted: clamped === 0, previousVolume: prev })
+    saveVolume(clamped, clamped === 0, prev)
   },
 
   toggleMute: () => {
     const { isMuted, previousVolume } = get()
     if (isMuted) {
       set({ volume: previousVolume, isMuted: false })
+      saveVolume(previousVolume, false, previousVolume)
     } else {
-      set({ previousVolume: get().volume, volume: 0, isMuted: true })
+      const cur = get().volume
+      set({ previousVolume: cur, volume: 0, isMuted: true })
+      saveVolume(0, true, cur)
     }
   },
 
@@ -139,4 +149,17 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   setError: (lastError: string | null) => set({ lastError }),
   incrementErrorCount: () => set((s) => ({ errorCount: s.errorCount + 1 })),
   resetErrorCount: () => set({ errorCount: 0, lastError: null }),
+  hydrateVolume: () => {
+    try {
+      const raw = localStorage.getItem(VOLUME_KEY)
+      if (raw) {
+        const v = JSON.parse(raw)
+        set({
+          volume: v.volume ?? 0.7,
+          isMuted: v.isMuted ?? false,
+          previousVolume: v.previousVolume ?? 0.7,
+        })
+      }
+    } catch { /* ignore */ }
+  },
 }))
