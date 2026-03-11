@@ -16,6 +16,10 @@ const nextConfig = {
           source: '/api/azuracast/:path*',
           destination: `${streamOrigin}/api/azuracast/:path*`,
         },
+        {
+          source: '/api/station/:path*',
+          destination: `${streamOrigin}/api/station/:path*`,
+        },
       ],
     }
   },

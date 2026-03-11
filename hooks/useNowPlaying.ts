@@ -7,6 +7,17 @@ import type { NowPlayingInfo, NowPlayingTrack } from '@/store/playerStore'
 const API_URL = process.env.NEXT_PUBLIC_AZURACAST_API_URL || ''
 const POLL_INTERVAL = 15_000 // 15 seconds
 
+/** Convert an absolute art URL to its pathname so it routes through our proxy/rewrites. */
+function normalizeArtUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+  try {
+    return new URL(url).pathname
+  } catch {
+    // Already a relative path or invalid — use as-is
+    return url
+  }
+}
+
 function buildTrack(raw: Record<string, unknown>): NowPlayingTrack | null {
   if (!raw) return null
   const song = raw.song as Record<string, unknown> | undefined
@@ -18,7 +29,7 @@ function buildTrack(raw: Record<string, unknown>): NowPlayingTrack | null {
       artist: String(song.artist ?? ''),
       album: String(song.album ?? ''),
       genre: String(song.genre ?? ''),
-      art: song.art ? String(song.art) : null,
+      art: normalizeArtUrl(song.art ? String(song.art) : null),
       text: String(song.text ?? ''),
       lyrics: String(song.lyrics ?? ''),
     },
@@ -58,7 +69,7 @@ export function useNowPlaying(): NowPlayingInfo | null {
       setNowPlaying({
         title: song?.title || 'Unknown Track',
         artist: song?.artist || 'Unknown Artist',
-        art: song?.art || null,
+        art: normalizeArtUrl(song?.art),
       })
 
       // Extract station description (e.g. "Main Stage")
