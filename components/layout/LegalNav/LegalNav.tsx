@@ -3,7 +3,6 @@ import Link from "next/link";
 const pages = [
   { href: "/privacy", label: "Privacy Policy" },
   { href: "/terms", label: "Terms of Service" },
-  { href: "/contact", label: "Contact" },
 ];
 
 export default function LegalNav({ currentPath }: { currentPath: string }) {

@@ -318,8 +318,8 @@ export default function Home() {
         style={{ color: resolvedTheme === 'light' ? 'hsl(0 0% 1% / 50%)' : 'hsl(0 0% 99% / 50%)' }}
       >
         &copy; {new Date().getFullYear()} BonnyTone Radio DJ
+        <span className="mx-1">·</span>
         <Link href="/terms" className="hover:opacity-80">terms</Link>
-        <Link href="/contact" className="hover:opacity-80">contact</Link>
       </span>
     </div>
   )

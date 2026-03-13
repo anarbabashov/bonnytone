@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 const NAV_LINKS = [
   { href: "/privacy", label: "privacy" },
   { href: "/terms", label: "terms" },
-  { href: "/contact", label: "contact" },
 ];
 
 export default function LegalLayout({ children }: { children: React.ReactNode }) {
