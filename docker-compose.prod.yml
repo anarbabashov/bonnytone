@@ -56,10 +56,13 @@ services:
   certbot:
     image: certbot/certbot
     container_name: btradio-certbot
+    restart: unless-stopped
     volumes:
       - certbot_certs:/etc/letsencrypt
       - certbot_webroot:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done'"
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./nginx/certbot-entrypoint.sh:/entrypoint.sh:ro
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
 
 volumes:
   azuracast_data:
